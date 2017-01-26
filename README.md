@@ -1,1 +1,2 @@
-# BMS_2
+# BMS
+Repository for a new BMS design
