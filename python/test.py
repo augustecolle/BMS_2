@@ -39,7 +39,7 @@ bb.setRemoteControllOn()
 bb.setInputOn()
 bb.setCCMode()
 bb.setPowerA(1000)
-bb.setVoltageA(17)
+bb.setVoltageA(16)
 bb.setCurrentA(0)
 bb.clearBuffer()
 
