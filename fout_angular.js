@@ -42,7 +42,6 @@ var app = angular.module('myApp', ["ngRoute"]);
       "temp7"      : " ",
       "temp8"      : " ",
       "temp9"      : " ",
-      "MBl"  : 0,
       "Sl1Bl"  : 0,
       "Sl2Bl"  : 0,
       "Sl3Bl"  : 0,
@@ -79,6 +78,10 @@ var app = angular.module('myApp', ["ngRoute"]);
         $rootScope.dict["temp2"] = response.data["temp2"].toFixed(2);
         $rootScope.dict["temp3"] = response.data["temp3"].toFixed(2);
         $rootScope.dict["temp4"] = response.data["temp4"].toFixed(2);
+        $rootScope.dict["Sl1Bl"] = response.data["Mbl"];
+        $rootScope.dict["Sl2Bl"] = response.data["Sl1Bl"];
+        $rootScope.dict["Sl3Bl"] = response.data["Sl2Bl"];
+        $rootScope.dict["Sl4Bl"] = response.data["Sl3Bl"];
         //$rootScope.dict["Sl4Voltage"] = response.data["Sl4Voltage"].toFixed(5);
         //$rootScope.dict["Sl5Voltage"] = response.data["Sl5Voltage"].toFixed(5);
         //$rootScope.dict["Sl6Voltage"] = response.data["Sl6Voltage"].toFixed(5);
@@ -132,9 +135,9 @@ var app = angular.module('myApp', ["ngRoute"]);
                 console.log("newVal");
                 add.tspan(newVal.toString()+' V')
                 add.tspan(function(addMore) {
-                  addMore.tspan(" ").newLine()
+                  addMore.tspan("Bl: " + scope.$root.dict["Sl" + divel.toString() +"Bl"]).newLine()
                   addMore.tspan(function(addEvenMore) {
-                    addEvenMore.tspan(scope.$root.dict["temp"+divel.toString()] + "°C").newLine()
+                    addEvenMore.tspan(scope.$root.dict["temp"+divel.toString()] + "°D").newLine()
                   })
                 })
               }

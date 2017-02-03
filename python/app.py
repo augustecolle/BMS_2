@@ -7,9 +7,10 @@ import logging.config
 import signal
 from flask import Flask, request
 from flask_restful import Resource, Api
-from libraries import can_lib_auguste as canau
+#from libraries import can_lib_auguste as canau
 from libraries import EAEL9080 as bb
 from libraries import EAPSI8720 as au
+import temp_reading_multithreading as ds18b20
 import json
 from RPi import GPIO
 import ast
@@ -21,13 +22,19 @@ import numpy as np
 import psutil
 import tempconf
 
+with open('blconfr.json', 'r') as f:
+    resetdict = json.load(f)
+with open('blconf.json', 'w') as f:
+    json.dump(resetdict, f)
+
 logging.config.dictConfig(logconf.LOGGING)
 global logger
 logger = logging.getLogger('app')
 
-canau.startSpi(10000, 0)
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(25, GPIO.OUT) #slave select
+
+plogging = subprocess.Popen(['/usr/bin/python3', 'logging2db.py'])
 
 au.startSerial('/dev/ttyUSB1')
 time.sleep(0.1)
@@ -63,7 +70,7 @@ def signal_handler(signal_s, frame):
     time.sleep(0.1)
     bb.setVoltageA(0)
     time.sleep(0.5)
-    bb.setPowerA(0)
+    #bb.setPowerA(0)
     time.sleep(0.1)
     bb.setInputOff()
     time.sleep(0.1)
@@ -75,7 +82,7 @@ def signal_handler(signal_s, frame):
     time.sleep(0.1)
     au.setCurrent(0)
     time.sleep(0.1)
-    au.stopSerial()   
+    au.stopSerial()
     time.sleep(0.1)
     for x in get_pid("python"):
         process = psutil.Process(int(x))
@@ -105,9 +112,10 @@ header = ["Timestamp", "Current", "MVoltage", "Sl1Voltage", "Sl2Voltage", "Sl3Vo
 global cut_off_voltage_low
 cut_off_voltage_low = 2.8
 global cut_off_voltage_high
-cut_off_voltage_high = 3.7
+cut_off_voltage_high = 4
 
-headerBl = ["MBl", "Sl1Bl", "Sl2Bl", "Sl3Bl", "Sl4Bl", "Sl5Bl", "Sl6Bl", "Sl7Bl", "Sl8Bl", "Sl9Bl", "Sl10Bl", "Sl11Bl", "Sl12Bl", "Sl13Bl", "Sl14Bl", "Sl15Bl"]
+#Sl0Bl is the master
+headerBl = ["Sl0Bl", "Sl1Bl", "Sl2Bl", "Sl3Bl", "Sl4Bl", "Sl5Bl", "Sl6Bl", "Sl7Bl", "Sl8Bl", "Sl9Bl", "Sl10Bl", "Sl11Bl", "Sl12Bl", "Sl13Bl", "Sl14Bl", "Sl15Bl"]
 
 bldict = {key:value for (key, value) in zip(headerBl, [0]*len(headerBl))}
 
@@ -137,9 +145,9 @@ class ActualValues(Resource):
         if con: con.close()
         for x in dataDict.keys():
             if "Voltage" in x:
-                print(x)
+                #print(x)
                 dataDict[x] = round(dataDict[x], 5)
-                print(round(dataDict[x], 5))
+                #print(round(dataDict[x], 5))
                 #print(dataDict[x])
                 if (dataDict[x] < cut_off_voltage_low):
                     logger.critical('UNDERVOLTAGE ON SLAVE %s REACHED, VOLTAGE NOW IS: %1.2f' % (x, dataDict[x]))
@@ -173,32 +181,28 @@ class BleedingControll(Resource):
         print(slave_id)
         if (slave_id[-2:].lower() == 'on'):
             bldict[slave_id[:-2]] = 1 
-            if (slave_id[:-2] == 'MBl'):
-                canau.setBleedingMasterOn()
-                canau.setBleedingMasterOn()
-                print("turned master bleeding on")
-            elif (filter(str.isdigit, str(slave_id))):
-                try:
-                    canau.setBleedingOn(int(filter(str.isdigit, str(slave_id))))
-                    canau.setBleedingOn(int(filter(str.isdigit, str(slave_id))))
-                    print("turned slave bleeding on")
-                except:
-                    logger.debug("Invallid slave id")
+            try:
+                #canau.setBleedingOn(int(filter(str.isdigit, str(slave_id))))
+                #canau.setBleedingOn(int(filter(str.isdigit, str(slave_id))))
+                print("turned slave bleeding on")
+            except:
+                print("EXCEPTION")
+                print(int(filter(str.isdigit, str(slave_id))))
+                print(slave_id)
+                logger.debug("Invallid slave id")
         elif (slave_id[-3:].lower() == 'off'):
             bldict[slave_id[:-3]] = 0 
-            if (slave_id[:-3] == 'MBl'):
-                canau.setBleedingMasterOff()
-                canau.setBleedingMasterOff()
-                print("turned master bleeding off")
-            elif (filter(str.isdigit, str(slave_id))):
-                try:
-                    canau.setBleedingOff(int(filter(str.isdigit, str(slave_id))))
-                    canau.setBleedingOff(int(filter(str.isdigit, str(slave_id))))
-                    print("turned slave bleeding off")
-                except:
-                    logger.debug("Invallid slave id")
+            try:
+                #canau.setBleedingOff(int(filter(str.isdigit, str(slave_id))))
+                #canau.setBleedingOff(int(filter(str.isdigit, str(slave_id))))
+                print("turned slave bleeding off")
+            except:
+                logger.debug("Invallid slave id")
         else:
             return bldict[slave_id]
+        with open('blconf.json', 'w') as f:
+            json.dump(bldict, f)
+        #os.kill(plogging.pid, signal.SIGUSR1)
         return 201
 
 class write2db(Resource):
@@ -208,7 +212,7 @@ class write2db(Resource):
         cur.execute('SELECT SQLITE_VERSION()')
         data = cur.fetchone()
         print("SQLITE version: " + str(data))
-    except lite.Error, e:
+    except lite.Error as e:
         print("Error " + str(e.args[0]))
         sys.exit(1)
     finally:
@@ -263,6 +267,4 @@ def set_allow_origin(resp):
 
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=5000, threaded=True)
-
-
 

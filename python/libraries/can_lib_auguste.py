@@ -88,7 +88,7 @@ def setBleedingMasterOff():
     global bldict
     GPIO.output(25, GPIO.HIGH) #slave select current measurement
     setBFPCTRL(int(getBFPCTRL(), 2) & 0xDF)
-    bldict["MBl"] = 0
+    bldict["Sl0Bl"] = 0
     return 0
 
 
@@ -96,7 +96,7 @@ def setBleedingMasterOn():
     global bldcit
     GPIO.output(25, GPIO.HIGH) #slave select current measurement
     setBFPCTRL(int(getBFPCTRL(), 2) | 0x20)
-    bldict["MBl"] = 1
+    bldict["Sl0Bl"] = 1
     return 0
 
 
@@ -489,29 +489,35 @@ def getVoltageSlaves(slaveaddresses = []):
 
 def setBleedingOn(slave, sleeptime=0.15):
     global bldict
-    setTXBnDM([1 for x in range(8)], 0)
-    setCANINTF(0x00)
-    setTXBnEID0(slave)
-    setTXBnCTRL(0x0B) 
-    GPIO.output(20, GPIO.HIGH)
-    time.sleep(0.05)
-    GPIO.output(20, GPIO.LOW)
-    time.sleep(0.10)
-    bldict["Sl"+str(slave)+"Bl"] = 1
+    if (slave  == 0):
+        setBleedingMasterOn()
+    else:
+        setTXBnDM([1 for x in range(8)], 0)
+        setCANINTF(0x00)
+        setTXBnEID0(slave)
+        setTXBnCTRL(0x0B) 
+        GPIO.output(20, GPIO.HIGH)
+        time.sleep(0.05)
+        GPIO.output(20, GPIO.LOW)
+        time.sleep(0.10)
+        bldict["Sl"+str(slave)+"Bl"] = 1
     return 0
 
 
 def setBleedingOff(slave, sleeptime=0.15):
     global bldict
-    setTXBnDM([2 for x in range(8)], 0)
-    setCANINTF(0x00)
-    setTXBnEID0(slave)
-    setTXBnCTRL(0x0B) 
-    GPIO.output(20, GPIO.HIGH)
-    time.sleep(0.05)
-    GPIO.output(20, GPIO.LOW)
-    time.sleep(sleeptime)
-    bldict["Sl"+str(slave)+"Bl"] = 0
+    if (slave == 0):
+        setBleedingMasterOff()
+    else:
+        setTXBnDM([2 for x in range(8)], 0)
+        setCANINTF(0x00)
+        setTXBnEID0(slave)
+        setTXBnCTRL(0x0B) 
+        GPIO.output(20, GPIO.HIGH)
+        time.sleep(0.05)
+        GPIO.output(20, GPIO.LOW)
+        time.sleep(sleeptime)
+        bldict["Sl"+str(slave)+"Bl"] = 0
     return 0
 
 
@@ -541,10 +547,10 @@ def init_meting(slaves = []):
     datadict['master voltage'] = []
     datadict['master current'] = []
     datadict['timestamp'] = []
-    bldict['MBl'] = 0
     for slave in slaves:
         datadict[slave] = []
         bldict["Sl"+str(slave)+"Bl"] = 0
+        setBleedingOff(slave)
     GPIO.remove_event_detect(4)
     GPIO.add_event_detect(4, GPIO.FALLING)
     GPIO.add_event_callback(4, callback = callback_can_meting)
