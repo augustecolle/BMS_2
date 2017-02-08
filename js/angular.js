@@ -1,7 +1,7 @@
 //bat_plot.js should be loaded for this javascript to work
 //
 //
-var app = angular.module('myApp', ["highcharts-ng", "ngRoute", 'ui.bootstrap']);
+var app = angular.module('myApp', ["ngRoute", 'ui.bootstrap', "highcharts-ng"]);
 
    
 app.config(function($routeProvider) {
