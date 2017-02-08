@@ -76,7 +76,7 @@ try:
     count = 0
     tempcount = 0
     while True:
-        con = lite.connect('../database/test.db', timeout = 5.0)
+        con = lite.connect('../database/test.db', timeout = 15.0)
         with con:
             start = time.time()
             cur = con.cursor()

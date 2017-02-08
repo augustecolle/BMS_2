@@ -14,6 +14,11 @@ import time as tm
 import sys
 import requests
 
+global minVn
+global minVv
+minVn = None
+minVv = None
+
 global blMap
 blMap = {
         "MVoltage" : 0,
@@ -67,26 +72,34 @@ def getActualValues():
     return ret
 
 def topBalancing(actualValues, blAcc = 1000e-6):
-    '''Get distance for implementing top balancing'''
+    '''Get distance for implementing top balancing, blAcc is bleeding accuracy'''
     global blMap
-    values = np.array(actualValues.keys())
-    values = np.sort(values)
-    if (len(values) > 0):
+    global minVn
+    global minVv
+
+    if (len(actualValues.keys()) > 0):
+        if (minVn == None):
+            values = np.array(actualValues.keys())
+            values = np.sort(values)
+            (minVv, minVn) = (values[0], actualValues[values[0]]) #minVn now contains the cell name of the battery with the lowest voltage, minVv the value
+        minVv = [key for (key, value) in actualValues.iteritems() if (value == minVn)][0]
+        del actualValues[[key for (key, value) in actualValues.iteritems() if (value == minVn)][0]]
+    
+        print(minVv, minVn)
+        values = np.array(actualValues.keys())
         print(values)
-        print("turning bleeding off for:")
-        print(actualValues[values[0]])
-        turnBleedingOff(blMap[actualValues[values[0]]])
-        diffVal = [x - values[0] for x in values[1:]]
+        diffVal = [x - minVv for x in values]
+
         for i in range(len(diffVal)):
             print(diffVal[i])
             if diffVal[i] > blAcc:
                 print("BleedingOn")
-                print(actualValues[values[i + 1]])
-                turnBleedingOn(blMap[actualValues[values[i + 1]]])
+                print(actualValues[values[i]])
+                turnBleedingOn(blMap[actualValues[values[i]]])
             else:
                 print("Bleeding Off")
-                print(actualValues[values[i + 1]])
-                turnBleedingOff(blMap[actualValues[values[i + 1]]])
+                print(actualValues[values[i]])
+                turnBleedingOff(blMap[actualValues[values[i]]])
     else:
         return -1
     return 0
@@ -131,27 +144,30 @@ au.readAndTreat()
 au.setVoltage(16)
 au.setPower(500)
 
-tm.sleep(1)
-au.setCurrent(0.3)
+#au.setCurrent(0.3)
 #
-try:
-    while True:
-        topBalancing(getActualValues())
-        tm.sleep(10)
-        #logger_test.debug("NEW TEST LOOP")
+#try:
+for x in [0,1,2,3]:
+    turnBleedingOff(x)
+tm.sleep(1)
 
-except Exception as e:
-    print(str(e.args[0]))
-    print(sys.exc_info()[0])
-    logger_test.debug("Exception occured")
-    #bb.setCurrentA(0)
-    #bb.setVoltageA(0)
-    ##bb.setPowerA(0) #takes too long
-    #bb.setInputOff()
-    #bb.setRemoteControllOff()
-    au.setVoltage(0)
-    au.setCurrent(0)
-    #bb.stopSerial()
-    #au.stopSerial()   
-    #sys.exit(1)
+while True:
+    topBalancing(getActualValues())
+    tm.sleep(1)
+    #logger_test.debug("NEW TEST LOOP")
+
+#except Exception as e:
+#    print(str(e.args[0]))
+#    print(sys.exc_info()[0])
+#    logger_test.debug("Exception occured")
+#    #bb.setCurrentA(0)
+#    #bb.setVoltageA(0)
+#    ##bb.setPowerA(0) #takes too long
+#    #bb.setInputOff()
+#    #bb.setRemoteControllOff()
+#    au.setVoltage(0)
+#    au.setCurrent(0)
+#    #bb.stopSerial()
+#    #au.stopSerial()   
+#    #sys.exit(1)
 

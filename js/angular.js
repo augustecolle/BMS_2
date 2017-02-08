@@ -36,34 +36,34 @@ app.controller("statCtrl", function($scope){
 
 app.run(function($rootScope, $http, $timeout){
   $rootScope.dict = {
-    "Timestamp" : -1,
-    "Current" : -1,
-    "0" : -1,
-    "1" : -1,
-    "2" : -1,
-    "3" : -1,
-    "4" : -1,
-    "5" : -1,
-    "6" : -1,
-    "7" : -1,
-    "temp1"      : " ",
-    "temp2"      : " ",
-    "temp3"      : " ",
-    "temp4"      : " ",
-    "temp5"      : " ",
-    "temp6"      : " ",
-    "temp7"      : " ",
-    "temp8"      : " ",
-    "temp9"      : " ",
-    "Sl0Bl"  : 0,
-    "Sl1Bl"  : 0,
-    "Sl2Bl"  : 0,
-    "Sl3Bl"  : 0,
-    "Sl4Bl"  : 0,
-    "Sl5Bl"  : 0,
-    "Sl6Bl"  : 0,
-    "Sl7Bl"  : 0,
-    "Sl8Bl"  : 0
+    "Timestamp" : [],
+    "Current" : [],
+    "0" : [],
+    "1" : [],
+    "2" : [],
+    "3" : [],
+    "4" : [],
+    "5" : [],
+    "6" : [],
+    "7" : [],
+    "temp1"      : [],
+    "temp2"      : [],
+    "temp3"      : [],
+    "temp4"      : [],
+    "temp5"      : [],
+    "temp6"      : [],
+    "temp7"      : [],
+    "temp8"      : [],
+    "temp9"      : [],
+    "Sl0Bl"  : [],
+    "Sl1Bl"  : [],
+    "Sl2Bl"  : [],
+    "Sl3Bl"  : [],
+    "Sl4Bl"  : [],
+    "Sl5Bl"  : [],
+    "Sl6Bl"  : [],
+    "Sl7Bl"  : [],
+    "Sl8Bl"  : []
   };
   $rootScope.stamp2date = function(timestamp){
     var date = new Date(timestamp*1000);
@@ -77,24 +77,40 @@ app.run(function($rootScope, $http, $timeout){
     $http.get("http://"+location.hostname+":5000/ActualValues")
     .then(function(response) {
       //$rootScope.dict = response.data;
-      $rootScope.dict["Current"] = response.data["Current"].toFixed(2);
-      $rootScope.dict["Timestamp"] = $rootScope.stamp2date(response.data["Timestamp"]);
-      $rootScope.dict["0"] = response.data["MVoltage"].toFixed(5);
-      $rootScope.dict["1"] = response.data["Sl1Voltage"].toFixed(5);
-      $rootScope.dict["2"] = response.data["Sl2Voltage"].toFixed(5);
-      $rootScope.dict["3"] = response.data["Sl3Voltage"].toFixed(5);
-      $rootScope.dict["temp1"] = response.data["temp1"].toFixed(2);
-      $rootScope.dict["temp2"] = response.data["temp2"].toFixed(2);
-      $rootScope.dict["temp3"] = response.data["temp3"].toFixed(2);
-      $rootScope.dict["temp4"] = response.data["temp4"].toFixed(2);
-      $rootScope.dict["Sl0Bl"] = (response.data["Sl0Bl"]);
-      $rootScope.dict["Sl1Bl"] = (response.data["Sl1Bl"]);
-      $rootScope.dict["Sl2Bl"] = (response.data["Sl2Bl"]);
-      $rootScope.dict["Sl3Bl"] = (response.data["Sl3Bl"]);
-      //$rootScope.dict["Sl4Voltage"] = response.data["Sl4Voltage"].toFixed(5);
-      //$rootScope.dict["Sl5Voltage"] = response.data["Sl5Voltage"].toFixed(5);
-      //$rootScope.dict["Sl6Voltage"] = response.data["Sl6Voltage"].toFixed(5);
-      //$rootScope.dict["Sl7Voltage"] = response.data["Sl7Voltage"].toFixed(5);
+      if ($rootScope.dict['Timestamp'].length > 1000){
+        $rootScope.dict["Current"].shift();
+        $rootScope.dict["Timestamp"].shift();
+        $rootScope.dict["0"].shift();
+        $rootScope.dict["1"].shift();
+        $rootScope.dict["2"].shift();
+        $rootScope.dict["3"].shift();
+        $rootScope.dict["temp1"].shift();
+        $rootScope.dict["temp2"].shift();
+        $rootScope.dict["temp3"].shift();
+        $rootScope.dict["temp4"].shift();
+        $rootScope.dict["Sl0Bl"].shift();
+        $rootScope.dict["Sl1Bl"].shift();
+        $rootScope.dict["Sl2Bl"].shift();
+        $rootScope.dict["Sl3Bl"].shift();
+      }
+      $rootScope.dict["Current"].push(response.data["Current"].toFixed(2));
+      $rootScope.dict["Timestamp"].push($rootScope.stamp2date(response.data["Timestamp"]));
+      $rootScope.dict["0"].push(response.data["MVoltage"].toFixed(5));
+      $rootScope.dict["1"].push(response.data["Sl1Voltage"].toFixed(5));
+      $rootScope.dict["2"].push(response.data["Sl2Voltage"].toFixed(5));
+      $rootScope.dict["3"].push(response.data["Sl3Voltage"].toFixed(5));
+      $rootScope.dict["temp1"].push(response.data["temp1"].toFixed(2));
+      $rootScope.dict["temp2"].push(response.data["temp2"].toFixed(2));
+      $rootScope.dict["temp3"].push(response.data["temp3"].toFixed(2));
+      $rootScope.dict["temp4"].push(response.data["temp4"].toFixed(2));
+      $rootScope.dict["Sl0Bl"].push((response.data["Sl0Bl"]));
+      $rootScope.dict["Sl1Bl"].push((response.data["Sl1Bl"]));
+      $rootScope.dict["Sl2Bl"].push((response.data["Sl2Bl"]));
+      $rootScope.dict["Sl3Bl"].push((response.data["Sl3Bl"]));
+    //$rootScope.dict["Sl4Voltage"] = response.data["Sl4Voltage"].toFixed(5));
+    //$rootScope.dict["Sl5Voltage"] = response.data["Sl5Voltage"].toFixed(5);
+    //$rootScope.dict["Sl6Voltage"] = response.data["Sl6Voltage"].toFixed(5);
+    //$rootScope.dict["Sl7Voltage"] = response.data["Sl7Voltage"].toFixed(5);
     });
   };
   $rootScope.intervalFunction = function(){
@@ -135,7 +151,7 @@ app.directive('draw', function($rootScope){
         })
         textbbox = text.bbox()
         nestedcanvas.viewbox(-62, -40, 120, 120);
-        $rootScope.$watch('dict["'+(divel - 1).toString()+'"]', function(newVal, oldVal){
+        $rootScope.$watch('dict["'+(divel - 1).toString()+'"][dict["'+(divel - 1).toString()+'"].length - 1]', function(newVal, oldVal){
           //console.log($rootScope.dict);
           //console.log("Sl" + divel.toString() +"Bl");
           //console.log($rootScope.dict["Sl" + divel.toString() +"Bl"]);
@@ -147,9 +163,9 @@ app.directive('draw', function($rootScope){
             } else {
               add.tspan(newVal.toString()+' V')
               add.tspan(function(addMore) {
-                addMore.tspan("Bl: " + $rootScope.dict["Sl" + (divel - 1).toString() +"Bl"]).newLine()
+                addMore.tspan("Bl: " + $rootScope.dict["Sl" + (divel - 1).toString() +"Bl"][$rootScope.dict["Sl" + (divel - 1).toString() +"Bl"].length - 1]).newLine()
                 addMore.tspan(function(addEvenMore) {
-                  addEvenMore.tspan($rootScope.dict["temp"+divel.toString()] + "°C").newLine()
+                  addEvenMore.tspan($rootScope.dict["temp"+divel.toString()][$rootScope.dict["temp"+divel.toString()].length - 1] + "°C").newLine()
                 })
               })
             }
