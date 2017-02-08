@@ -1,1 +1,48 @@
-<div> Auguste </div>
+
+<div id="statistics">
+  <uib-tabset active="active">
+    <uib-tab index="0" heading="Static title">Static content</uib-tab>
+    <uib-tab index="$index + 1" ng-repeat="tab in tabs" heading="{{tab.title}}" disable="tab.disabled">
+      {{tab.content}}
+    </uib-tab>
+    <uib-tab index="3" select="alertMe()">
+      <uib-tab-heading>
+        <i class="glyphicon glyphicon-bell"></i> Alert!
+      </uib-tab-heading>
+      I've got an HTML heading, and a select callback. Pretty cool!
+    </uib-tab>
+  </uib-tabset>
+
+  <hr />
+</div>
+
+
+
+<!--div id="statistics">
+  <div class="w3-container w3-panel" id="tabHeadStatistics">
+    <ul class="w3-navbar w3-light-grey">
+      <li><a href="" ng-click="clickTab(0)" class="tablink w3-dark-grey">All</a></li>
+      <li><a href="" ng-click="clickTab(1)" class="tablink">Voltage</a></li>
+      <li><a href="" ng-click="clickTab(2)" class="tablink">Temperature</a></li>
+      <li><a href="" ng-click="clickTab(3)" class="tablink">Bleeding</a></li>
+    </ul>
+  </div>
+  
+      <div id="tab1" ng-show="tabs[0]" >
+        <div id="graph1">
+        </div>
+      </div>
+      <div id="tab2" ng-show="tabs[1]">
+        <div id="graph2">
+        </div>
+      </div>
+      <div id="tab3" ng-show="tabs[2]">
+        <div id="graph3">
+        </div>
+      </div>
+      <div id="tab4" ng-show="tabs[3]">
+        <div id="graph4">
+        </div>
+      </div>
+
+</div-->

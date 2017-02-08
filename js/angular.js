@@ -1,7 +1,7 @@
 //bat_plot.js should be loaded for this javascript to work
 //
 //
-var app = angular.module('myApp', ["ngRoute", 'ui.bootstrap']);
+var app = angular.module('myApp', ["highcharts-ng", "ngRoute", 'ui.bootstrap']);
 
    
 app.config(function($routeProvider) {
@@ -16,7 +16,8 @@ app.config(function($routeProvider) {
     controller: "mainCtrl"
   })
   .when("/statistics", {
-    templateUrl: "../statistics.html"
+    templateUrl: "../statistics.html",
+    controller: "statCtrl"
   });
 });
 
@@ -29,9 +30,21 @@ app.controller('mainCtrl', function($scope, $location) {
   };
 });
 
-app.controller("mapCtrl", function($scope){
-});
-app.controller("statCtrl", function($scope){
+app.controller("statCtrl", function($scope, $rootScope){
+  $scope.tabs = [
+    { title:'Dynamic Title 1', content:'Dynamic content 1' },
+    { title:'Dynamic Title 2', content:'Dynamic content 2', disabled: true }
+  ];
+
+  $scope.alertMe = function() {
+    setTimeout(function() {
+      $window.alert('You\'ve selected the alert tab!');
+    });
+  };
+
+  $scope.model = {
+    name: 'Tabs'
+  };
 });
 
 app.run(function($rootScope, $http, $timeout){
