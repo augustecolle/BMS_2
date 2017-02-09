@@ -32,23 +32,373 @@ app.controller('mainCtrl', function($scope, $location) {
 
 app.controller("statCtrl", function($scope, $rootScope){
   $scope.tabs = [
-    { title:'Dynamic Title 1', content:'Dynamic content 1' },
-    { title:'Dynamic Title 2', content:'Dynamic content 2', disabled: true }
-  ];
+    { title:'All', content:
+      "test"
+    },
 
-  $scope.alertMe = function() {
-    setTimeout(function() {
-      $window.alert('You\'ve selected the alert tab!');
-    });
-  };
+  { title:'Voltages', content:'Dynamic content 2'},
+  { title:'Temperatures', content:'Dynamic content 3'},
+  { title:'BleedingCtrl', content:'Dynamic content 4'}
+];
+function zip(arrays) {
+  return arrays[0].map(function(_,i){
+    return arrays.map(function(array){return array[i]})
+});
+}
 
-  $scope.model = {
-    name: 'Tabs'
-  };
+var init1 = 0;
+var init2 = 0;
+var init3 = 0;
+var init4 = 0;
+
+$scope.drawHighCh = function(num){
+  setTimeout(function(){
+    if (num == 1 && init1 == 0){
+      init1 = 1;
+      var shiftOrNot1 = false;
+      $rootScope.chart1Config = new Highcharts.Chart({
+        chart: {
+          renderTo: 'tab'+num.toString(),
+          events: {
+          load: function () {
+            var series = this.series;
+            setInterval(function () {
+              if (!shiftOrNot1 && $rootScope.dict["Timestamp"].length > 50){
+                shiftOrNot1 = true;
+                console.log("turned shifting on");
+              };
+              var x = $rootScope.dict["Timestamp"][$rootScope.dict["Timestamp"].length - 1]*1000,
+                  y = $rootScope.dict["0"][$rootScope.dict["0"].length - 1];
+              series[0].addPoint([x, y], true, shiftOrNot1);
+              y = $rootScope.dict["1"][$rootScope.dict["1"].length - 1];
+              series[1].addPoint([x, y], true, shiftOrNot1);
+              y = $rootScope.dict["2"][$rootScope.dict["2"].length - 1];
+              series[2].addPoint([x, y], true, shiftOrNot1);
+              y = $rootScope.dict["3"][$rootScope.dict["3"].length - 1];
+              series[3].addPoint([x, y], true, shiftOrNot1);
+              y = $rootScope.dict["Current"][$rootScope.dict["Current"].length - 1];
+              series[4].addPoint([x, y], true, shiftOrNot1);
+              y = $rootScope.dict["temp1"][$rootScope.dict["temp1"].length - 1];
+              series[5].addPoint([x, y], true, shiftOrNot1);
+              y = $rootScope.dict["temp2"][$rootScope.dict["temp2"].length - 1];
+              series[6].addPoint([x, y], true, shiftOrNot1);
+              y = $rootScope.dict["temp3"][$rootScope.dict["temp3"].length - 1];
+              series[7].addPoint([x, y], true, shiftOrNot1);
+              y = $rootScope.dict["temp4"][$rootScope.dict["temp4"].length - 1];
+              series[8].addPoint([x, y], true, shiftOrNot1);
+              y = $rootScope.dict["Sl0Bl"][$rootScope.dict["Sl0Bl"].length - 1];
+              series[9].addPoint([x, y], true, shiftOrNot1);
+              y = $rootScope.dict["Sl1Bl"][$rootScope.dict["Sl1Bl"].length - 1];
+              series[10].addPoint([x, y], true, shiftOrNot1);
+              y = $rootScope.dict["Sl2Bl"][$rootScope.dict["Sl2Bl"].length - 1];
+              series[11].addPoint([x, y], true, shiftOrNot1);
+              y = $rootScope.dict["Sl3Bl"][$rootScope.dict["Sl3Bl"].length - 1];
+              series[12].addPoint([x, y], true, shiftOrNot1);
+              }, 1000);
+            }
+          },
+          animation: Highcharts.svg
+          //type: 'line',
+          //zoomType: 'xy',
+          //animation: true
+          //width: x,
+          //height: y
+        },
+        xAxis: {
+          type: 'datetime',
+          dateTimeLabelFormats: {
+            second: '%Y-%m-%d<br/>%H:%M:%S',
+            minute: '%Y-%m-%d<br/>%H:%M',
+            hour: '%Y-%m-%d<br/>%H:%M',
+            day: '%Y<br/>%m-%d',
+            week: '%Y<br/>%m-%d',
+            month: '%Y-%m',
+            year: '%Y'
+          },
+
+          title: {
+            text: "Time" 
+          }
+        },
+        yAxis: {
+          title: {
+            text: "Voltage/Temperature/Bleeding [-]"
+          }
+        },
+        rangeSelector: {
+          selected: 1
+        },
+        series: [
+          {'name': 'Cel0-voltage',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['0']])},
+          {'name': 'Cel1-voltage',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['1']])},
+          {'name': 'Cel2-voltage',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['2']])},
+          {'name': 'Cel3-voltage',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['3']])},
+          {'name': 'Current',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Current']])},
+          {'name': 'Cel0-temperature',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp1']])},
+          {'name': 'Cel1-temperature',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp2']])},
+          {'name': 'Cel2-temperature',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp3']])},
+          {'name': 'Cel3-temperature',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp4']])},
+          {'name': 'Cel0-bleeding',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl0Bl']])},
+          {'name': 'Cel1-bleeding',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl1Bl']])},
+          {'name': 'Cel2-bleeding',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl2Bl']])},
+          {'name': 'Cel3-bleeding',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl3Bl']])}
+          ],
+        title: {
+            text: "Battery all stats"
+        }
+      })
+    } else if (num == 2 && init2 == 0){
+      init2 = 1;
+      var shiftOrNot = false;
+      $rootScope.chart2Config = new Highcharts.Chart({
+        chart: {
+          renderTo: 'tab'+num.toString(),
+          type: 'line',
+          zoomType: 'xy',
+          events: {
+          load: function () {
+            var series = this.series;
+            setInterval(function () {
+              if (!shiftOrNot && $rootScope.dict["Timestamp"].length > 50){
+                shiftOrNot = true;
+                console.log("turned shifting on");
+              };
+              var x = $rootScope.dict["Timestamp"][$rootScope.dict["Timestamp"].length - 1]*1000,
+                  y = $rootScope.dict["0"][$rootScope.dict["0"].length - 1];
+              series[0].addPoint([x, y], true, shiftOrNot);
+              y = $rootScope.dict["1"][$rootScope.dict["1"].length - 1];
+              series[1].addPoint([x, y], true, shiftOrNot);
+              y = $rootScope.dict["2"][$rootScope.dict["2"].length - 1];
+              series[2].addPoint([x, y], true, shiftOrNot);
+              y = $rootScope.dict["3"][$rootScope.dict["3"].length - 1];
+              series[3].addPoint([x, y], true, shiftOrNot);
+              }, 1000);
+            }
+          },
+          animation: Highcharts.svg
+          //width: x,
+          //height: y
+        },
+        xAxis: {
+          type : 'datetime',
+          dateTimeLabelFormats: {
+            second: '%Y-%m-%d<br/>%H:%M:%S',
+            minute: '%Y-%m-%d<br/>%H:%M',
+            hour: '%Y-%m-%d<br/>%H:%M',
+            day: '%Y<br/>%m-%d',
+            week: '%Y<br/>%m-%d',
+            month: '%Y-%m',
+            year: '%Y'
+          },
+          title: {
+            text: "Time" 
+          }
+        },
+        yAxis: {
+          title: {
+            text: "Voltage [V]"
+          }
+        },
+        series: [
+          {'name': 'Cel0-voltage',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['0']])},
+          {'name': 'Cel1-voltage',                                                  
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['1']])},
+          {'name': 'Cel2-voltage',                                                  
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['2']])},
+          {'name': 'Cel3-voltage',                                                  
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['3']])}
+          ],
+        title: {
+            text: "Battery voltage stats"
+        }
+      })
+
+    } else if (num == 3 && init3 == 0){
+      init3 = 1;
+      shiftOrNot3 = false;
+      $rootScope.chart3Config = new Highcharts.Chart({
+        chart: {
+          renderTo: 'tab'+num.toString(),
+          events: {
+          load: function () {
+            var series = this.series;
+            setInterval(function () {
+              if (!shiftOrNot3 && $rootScope.dict["Timestamp"].length > 50){
+                shiftOrNot3 = true;
+                console.log("turned shifting on");
+              };
+              var x = $rootScope.dict["Timestamp"][$rootScope.dict["Timestamp"].length - 1]*1000,
+                  y = $rootScope.dict["temp1"][$rootScope.dict["temp1"].length - 1];
+              series[0].addPoint([x, y], true, shiftOrNot3);
+              y = $rootScope.dict["temp2"][$rootScope.dict["temp2"].length - 1];
+              series[1].addPoint([x, y], true, shiftOrNot3);
+              y = $rootScope.dict["temp3"][$rootScope.dict["temp3"].length - 1];
+              series[2].addPoint([x, y], true, shiftOrNot3);
+              y = $rootScope.dict["temp4"][$rootScope.dict["temp4"].length - 1];
+              series[3].addPoint([x, y], true, shiftOrNot3);
+              }, 1000);
+            }
+          },
+          animation: Highcharts.svg
+          //type: 'line',
+          //zoomType: 'xy',
+          //animation: true
+          //width: x,
+          //height: y
+        },
+        xAxis: {
+          tickmarkPlacement: 'on',
+          type: 'datetime',
+          dateTimeLabelFormats: {
+            second: '%Y-%m-%d<br/>%H:%M:%S',
+            minute: '%Y-%m-%d<br/>%H:%M',
+            hour: '%Y-%m-%d<br/>%H:%M',
+            day: '%Y<br/>%m-%d',
+            week: '%Y<br/>%m-%d',
+            month: '%Y-%m',
+            year: '%Y'
+          },
+
+          title: {
+            text: "Time" 
+          }
+        },
+        yAxis: {
+          title: {
+            text: "Temperature [°C]"
+          }
+        },
+        series: [
+          {'name': 'Cel0-temperature',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp1']])},
+          {'name': 'Cel1-temperature',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp2']])},
+          {'name': 'Cel2-temperature',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp3']])},
+          {'name': 'Cel3-temperature',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp4']])}
+          ],
+        title: {
+            text: "Battery temperature stats"
+        },
+        tooltip: {
+          formatter: function(){
+            return "Timestamp: " + Highcharts.numberFormat(this.x, 0) + " s <br\> " + this.series.name + ": " + Highcharts.numberFormat(this.y, 2) + " "
+          }
+        }
+      })
+
+
+    } else if (num == 4 && init4 == 0){
+      init4 = 1;
+      var shiftOrNot4 = false;
+      $rootScope.chart4Config = new Highcharts.Chart({
+        chart: {
+          renderTo: 'tab'+num.toString(),
+          events: {
+          load: function () {
+            var series = this.series;
+            setInterval(function () {
+              if (!shiftOrNot1 && $rootScope.dict["Timestamp"].length > 50){
+                shiftOrNot1 = true;
+                console.log("turned shifting on");
+              };
+              var x = $rootScope.dict["Timestamp"][$rootScope.dict["Timestamp"].length - 1]*1000,
+                  y = $rootScope.dict["Sl0Bl"][$rootScope.dict["Sl0Bl"].length - 1];
+              series[0].addPoint([x, y], true, shiftOrNot1);
+              y = $rootScope.dict["Sl1Bl"][$rootScope.dict["Sl1Bl"].length - 1];
+              series[1].addPoint([x, y], true, shiftOrNot1);
+              y = $rootScope.dict["Sl2Bl"][$rootScope.dict["Sl2Bl"].length - 1];
+              series[2].addPoint([x, y], true, shiftOrNot1);
+              y = $rootScope.dict["Sl3Bl"][$rootScope.dict["Sl3Bl"].length - 1];
+              series[3].addPoint([x, y], true, shiftOrNot1);
+              }, 1000);
+            }
+          },
+          animation: Highcharts.svg
+
+          //type: 'line',
+          //zoomType: 'xy',
+          //animation: true
+          //width: x,
+          //height: y
+        },
+        xAxis: {
+          tickmarkPlacement: 'on',
+          type: 'datetime',
+          dateTimeLabelFormats: {
+            second: '%Y-%m-%d<br/>%H:%M:%S',
+            minute: '%Y-%m-%d<br/>%H:%M',
+            hour: '%Y-%m-%d<br/>%H:%M',
+            day: '%Y<br/>%m-%d',
+            week: '%Y<br/>%m-%d',
+            month: '%Y-%m',
+            year: '%Y'
+          },
+
+          title: {
+            text: "Time" 
+          }
+        },
+        yAxis: {
+          title: {
+            text: "Bleeding [1 = on, 0 = off]"
+          }
+        },
+        series: [
+          {'name': 'Cel0-bleeding',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl0Bl']])},
+          {'name': 'Cel1-bleeding',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl1Bl']])},
+          {'name': 'Cel2-bleeding',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl2Bl']])},
+          {'name': 'Cel3-bleeding',
+           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl3Bl']])}
+          ],
+        title: {
+            text: "Battery bleeding stats"
+        },
+        tooltip: {
+          formatter: function(){
+            return "Timestamp: " + Highcharts.numberFormat(this.x, 0) + " s <br\> " + this.series.name + ": " + Highcharts.numberFormat(this.y, 2) + " "
+          }
+        }
+      })
+
+
+    } else {
+      "no function defined";
+    };
+  }); 
+};
+
+$scope.alertMe = function() {
+  setTimeout(function() {
+    $window.alert('You\'ve selected the alert tab!');
+  });
+};
+
+$scope.model = {
+  name: 'Tabs'
+};
 });
 
 app.run(function($rootScope, $http, $timeout){
-  $rootScope.dict = {
+$rootScope.dict = {
     "Timestamp" : [],
     "Current" : [],
     "0" : [],
@@ -106,20 +456,20 @@ app.run(function($rootScope, $http, $timeout){
         $rootScope.dict["Sl2Bl"].shift();
         $rootScope.dict["Sl3Bl"].shift();
       }
-      $rootScope.dict["Current"].push(response.data["Current"].toFixed(2));
-      $rootScope.dict["Timestamp"].push($rootScope.stamp2date(response.data["Timestamp"]));
-      $rootScope.dict["0"].push(response.data["MVoltage"].toFixed(5));
-      $rootScope.dict["1"].push(response.data["Sl1Voltage"].toFixed(5));
-      $rootScope.dict["2"].push(response.data["Sl2Voltage"].toFixed(5));
-      $rootScope.dict["3"].push(response.data["Sl3Voltage"].toFixed(5));
-      $rootScope.dict["temp1"].push(response.data["temp1"].toFixed(2));
-      $rootScope.dict["temp2"].push(response.data["temp2"].toFixed(2));
-      $rootScope.dict["temp3"].push(response.data["temp3"].toFixed(2));
-      $rootScope.dict["temp4"].push(response.data["temp4"].toFixed(2));
-      $rootScope.dict["Sl0Bl"].push((response.data["Sl0Bl"]));
-      $rootScope.dict["Sl1Bl"].push((response.data["Sl1Bl"]));
-      $rootScope.dict["Sl2Bl"].push((response.data["Sl2Bl"]));
-      $rootScope.dict["Sl3Bl"].push((response.data["Sl3Bl"]));
+      $rootScope.dict["Current"].push(parseFloat(response.data["Current"].toFixed(2)));
+      $rootScope.dict["Timestamp"].push(parseFloat(response.data["Timestamp"]));
+      $rootScope.dict["0"].push(parseFloat(response.data["MVoltage"].toFixed(5)));
+      $rootScope.dict["1"].push(parseFloat(response.data["Sl1Voltage"].toFixed(5)));
+      $rootScope.dict["2"].push(parseFloat(response.data["Sl2Voltage"].toFixed(5)));
+      $rootScope.dict["3"].push(parseFloat(response.data["Sl3Voltage"].toFixed(5)));
+      $rootScope.dict["temp1"].push(parseFloat(response.data["temp1"].toFixed(2)));
+      $rootScope.dict["temp2"].push(parseFloat(response.data["temp2"].toFixed(2)));
+      $rootScope.dict["temp3"].push(parseFloat(response.data["temp3"].toFixed(2)));
+      $rootScope.dict["temp4"].push(parseFloat(response.data["temp4"].toFixed(2)));
+      $rootScope.dict["Sl0Bl"].push(parseFloat(response.data["Sl0Bl"]));
+      $rootScope.dict["Sl1Bl"].push(parseFloat(response.data["Sl1Bl"]));
+      $rootScope.dict["Sl2Bl"].push(parseFloat(response.data["Sl2Bl"]));
+      $rootScope.dict["Sl3Bl"].push(parseFloat(response.data["Sl3Bl"]));
     //$rootScope.dict["Sl4Voltage"] = response.data["Sl4Voltage"].toFixed(5));
     //$rootScope.dict["Sl5Voltage"] = response.data["Sl5Voltage"].toFixed(5);
     //$rootScope.dict["Sl6Voltage"] = response.data["Sl6Voltage"].toFixed(5);
