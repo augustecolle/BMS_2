@@ -21,6 +21,7 @@ import subprocess
 import numpy as np
 import psutil
 import tempconf
+import requests
 
 with open('blconfr.json', 'r') as f:
     resetdict = json.load(f)
@@ -168,6 +169,12 @@ class ActualValues(Resource):
                 os.kill(int(x), signal.SIGTERM)
                 logger.debug("Sent SIGTERM to process ID: %d", int(x))
                 time.sleep(0.5)
+        au.setCurrent(0)
+        bb.setCurrentA(15)
+        time.sleep(5)
+        bb.setCurrentA(0)
+        for num in range(numslaves + 1):
+            requests.get('http://0.0.0.0:5000/BleedingControll/Sl' + str(num) + 'BlOff')
         #os.kill(int(os.getpid()), signal.SIGTERM)
 
 class BleedingControll(Resource):

@@ -129,7 +129,7 @@ bb.startSerial('/dev/ttyUSB0', "02")
 bb.setRemoteControllOn()
 bb.setInputOn()
 bb.setCCMode()
-bb.setPowerA(1000)
+#bb.setPowerA(1000)
 bb.setVoltageA(16)
 bb.setCurrentA(0)
 bb.clearBuffer()
@@ -140,34 +140,34 @@ tm.sleep(1)
 au.startSerial('/dev/ttyUSB1')
 au.remoteControllOn()
 au.readAndTreat()
-#au.setCurrent(0)
+au.setCurrent(0)
 au.setVoltage(16)
 au.setPower(500)
 
 #au.setCurrent(0.3)
 #
-#try:
-for x in [0,1,2,3]:
-    turnBleedingOff(x)
-tm.sleep(1)
-
-while True:
-    topBalancing(getActualValues())
+try:
+    for x in [0,1,2,3]:
+        turnBleedingOff(x)
     tm.sleep(1)
-    #logger_test.debug("NEW TEST LOOP")
-
-#except Exception as e:
-#    print(str(e.args[0]))
-#    print(sys.exc_info()[0])
-#    logger_test.debug("Exception occured")
-#    #bb.setCurrentA(0)
-#    #bb.setVoltageA(0)
-#    ##bb.setPowerA(0) #takes too long
-#    #bb.setInputOff()
-#    #bb.setRemoteControllOff()
-#    au.setVoltage(0)
-#    au.setCurrent(0)
-#    #bb.stopSerial()
-#    #au.stopSerial()   
-#    #sys.exit(1)
+    
+    while True:
+        topBalancing(getActualValues())
+        tm.sleep(1)
+        #logger_test.debug("NEW TEST LOOP")
+    
+except Exception as e:
+    print(str(e.args[0]))
+    print(sys.exc_info()[0])
+    logger_test.debug("Exception occured")
+    #bb.setCurrentA(0)
+    #bb.setVoltageA(0)
+    ##bb.setPowerA(0) #takes too long
+    bb.setInputOff()
+    bb.setRemoteControllOff()
+    au.setVoltage(0)
+    au.setCurrent(0)
+    bb.stopSerial()
+    au.stopSerial()   
+    sys.exit(1)
 

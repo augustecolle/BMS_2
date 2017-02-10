@@ -63,7 +63,7 @@ $scope.drawHighCh = function(num){
           load: function () {
             var series = this.series;
             setInterval(function () {
-              if (!shiftOrNot1 && $rootScope.dict["Timestamp"].length > 50){
+              if (!shiftOrNot1 && $rootScope.dict["Timestamp"].length > 30){
                 shiftOrNot1 = true;
                 console.log("turned shifting on");
               };
@@ -96,8 +96,8 @@ $scope.drawHighCh = function(num){
               series[12].addPoint([x, y], true, shiftOrNot1);
               }, 1000);
             }
-          },
-          animation: Highcharts.svg
+          }
+          //animation: Highcharts.svg
           //type: 'line',
           //zoomType: 'xy',
           //animation: true
@@ -130,31 +130,35 @@ $scope.drawHighCh = function(num){
         },
         series: [
           {'name': 'Cel0-voltage',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['0']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['0'].slice(Math.max($rootScope.dict["0"].length - 30, 1))])},
           {'name': 'Cel1-voltage',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['1']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['1'].slice(Math.max($rootScope.dict['1'].length - 30, 1))])},
           {'name': 'Cel2-voltage',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['2']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['2'].slice(Math.max($rootScope.dict['2'].length - 30, 1))])},
           {'name': 'Cel3-voltage',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['3']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['3'].slice(Math.max($rootScope.dict['3'].length - 30, 1))])},
           {'name': 'Current',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Current']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Current'].slice(Math.max($rootScope.dict['Current'].length - 30, 1))])},
           {'name': 'Cel0-temperature',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp1']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp1'].slice(Math.max($rootScope.dict['temp1'].length - 30, 1))])},
           {'name': 'Cel1-temperature',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp2']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp2'].slice(Math.max($rootScope.dict['temp2'].length - 30, 1))])},
           {'name': 'Cel2-temperature',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp3']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp3'].slice(Math.max($rootScope.dict['temp3'].length - 30, 1))])},
           {'name': 'Cel3-temperature',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp4']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp4'].slice(Math.max($rootScope.dict['temp4'].length - 30, 1))])},
           {'name': 'Cel0-bleeding',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl0Bl']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl0Bl'].slice(Math.max($rootScope.dict['Sl0Bl'].length - 30, 1))]),
+           'step': 'left'},
           {'name': 'Cel1-bleeding',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl1Bl']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl1Bl'].slice(Math.max($rootScope.dict['Sl1Bl'].length - 30, 1))]),
+          'step': 'left'},
           {'name': 'Cel2-bleeding',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl2Bl']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl2Bl'].slice(Math.max($rootScope.dict['Sl2Bl'].length - 30, 1))]),
+          'step': 'left'},
           {'name': 'Cel3-bleeding',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl3Bl']])}
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl3Bl'].slice(Math.max($rootScope.dict['Sl3Bl'].length - 30, 1))]),
+          'step': 'left'}
           ],
         title: {
             text: "Battery all stats"
@@ -172,7 +176,7 @@ $scope.drawHighCh = function(num){
           load: function () {
             var series = this.series;
             setInterval(function () {
-              if (!shiftOrNot && $rootScope.dict["Timestamp"].length > 50){
+              if (!shiftOrNot && $rootScope.dict["Timestamp"].length > 30){
                 shiftOrNot = true;
                 console.log("turned shifting on");
               };
@@ -187,8 +191,8 @@ $scope.drawHighCh = function(num){
               series[3].addPoint([x, y], true, shiftOrNot);
               }, 1000);
             }
-          },
-          animation: Highcharts.svg
+          }
+          //animation: Highcharts.svg
           //width: x,
           //height: y
         },
@@ -214,13 +218,13 @@ $scope.drawHighCh = function(num){
         },
         series: [
           {'name': 'Cel0-voltage',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['0']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['0'].slice(Math.max($rootScope.dict['0'].length - 30, 1))])},
           {'name': 'Cel1-voltage',                                                  
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['1']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['1'].slice(Math.max($rootScope.dict['1'].length - 30, 1))])},
           {'name': 'Cel2-voltage',                                                  
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['2']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['2'].slice(Math.max($rootScope.dict['2'].length - 30, 1))])},
           {'name': 'Cel3-voltage',                                                  
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['3']])}
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['3'].slice(Math.max($rootScope.dict['3'].length - 30, 1))])}
           ],
         title: {
             text: "Battery voltage stats"
@@ -237,7 +241,7 @@ $scope.drawHighCh = function(num){
           load: function () {
             var series = this.series;
             setInterval(function () {
-              if (!shiftOrNot3 && $rootScope.dict["Timestamp"].length > 50){
+              if (!shiftOrNot3 && $rootScope.dict["Timestamp"].length > 30){
                 shiftOrNot3 = true;
                 console.log("turned shifting on");
               };
@@ -252,8 +256,8 @@ $scope.drawHighCh = function(num){
               series[3].addPoint([x, y], true, shiftOrNot3);
               }, 1000);
             }
-          },
-          animation: Highcharts.svg
+          }
+          //animation: Highcharts.svg
           //type: 'line',
           //zoomType: 'xy',
           //animation: true
@@ -284,15 +288,15 @@ $scope.drawHighCh = function(num){
         },
         series: [
           {'name': 'Cel0-temperature',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp1']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp1'].slice(Math.max($rootScope.dict['temp1'].length - 30, 1))])},
           {'name': 'Cel1-temperature',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp2']])},
-          {'name': 'Cel2-temperature',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp3']])},
-          {'name': 'Cel3-temperature',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['temp4']])}
-          ],
-        title: {
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp2'].slice(Math.max($rootScope.dict['temp2'].length - 30, 1))])},
+          {'name': 'Cel2-temperature',                                              
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp3'].slice(Math.max($rootScope.dict['temp3'].length - 30, 1))])},
+          {'name': 'Cel3-temperature',                                              
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp4'].slice(Math.max($rootScope.dict['temp4'].length - 30, 1))])}
+          ],                                                                        
+        title: { 
             text: "Battery temperature stats"
         },
         tooltip: {
@@ -313,7 +317,7 @@ $scope.drawHighCh = function(num){
           load: function () {
             var series = this.series;
             setInterval(function () {
-              if (!shiftOrNot1 && $rootScope.dict["Timestamp"].length > 50){
+              if (!shiftOrNot1 && $rootScope.dict["Timestamp"].length > 30){
                 shiftOrNot1 = true;
                 console.log("turned shifting on");
               };
@@ -328,8 +332,8 @@ $scope.drawHighCh = function(num){
               series[3].addPoint([x, y], true, shiftOrNot1);
               }, 1000);
             }
-          },
-          animation: Highcharts.svg
+          }
+          //animation: Highcharts.svg
 
           //type: 'line',
           //zoomType: 'xy',
@@ -361,13 +365,17 @@ $scope.drawHighCh = function(num){
         },
         series: [
           {'name': 'Cel0-bleeding',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl0Bl']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl0Bl'].slice(Math.max($rootScope.dict['Sl0Bl'].length - 30, 1))]),
+          'step': 'left'},
           {'name': 'Cel1-bleeding',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl1Bl']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl1Bl'].slice(Math.max($rootScope.dict['Sl1Bl'].length - 30, 1))]),
+          'step': 'left'},
           {'name': 'Cel2-bleeding',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl2Bl']])},
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl2Bl'].slice(Math.max($rootScope.dict['Sl2Bl'].length - 30, 1))]),
+          'step': 'left'},
           {'name': 'Cel3-bleeding',
-           'data': zip([$rootScope.dict["Timestamp"].map(function(x){return x*1000}), $rootScope.dict['Sl3Bl']])}
+           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl3Bl'].slice(Math.max($rootScope.dict['Sl3Bl'].length - 30, 1))]),
+          'step': 'left'}
           ],
         title: {
             text: "Battery bleeding stats"
