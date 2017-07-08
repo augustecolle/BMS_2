@@ -42,7 +42,7 @@ time.sleep(0.1)
 au.remoteControllOn()
 au.readAndTreat()
 au.setCurrent(0)
-au.setVoltage(18)
+au.setVoltage(16)
 au.setPower(500)
 
 bb.startSerial('/dev/ttyUSB0', "02")
@@ -113,7 +113,7 @@ header = ["Timestamp", "Current", "MVoltage", "Sl1Voltage", "Sl2Voltage", "Sl3Vo
 global cut_off_voltage_low
 cut_off_voltage_low = 2.8
 global cut_off_voltage_high
-cut_off_voltage_high = 4
+cut_off_voltage_high = 4.0
 
 #Sl0Bl is the master
 headerBl = ["Sl0Bl", "Sl1Bl", "Sl2Bl", "Sl3Bl", "Sl4Bl", "Sl5Bl", "Sl6Bl", "Sl7Bl", "Sl8Bl", "Sl9Bl", "Sl10Bl", "Sl11Bl", "Sl12Bl", "Sl13Bl", "Sl14Bl", "Sl15Bl"]
@@ -152,16 +152,20 @@ class ActualValues(Resource):
                 #print(dataDict[x])
                 if (dataDict[x] < cut_off_voltage_low):
                     logger.critical('UNDERVOLTAGE ON SLAVE %s REACHED, VOLTAGE NOW IS: %1.2f' % (x, dataDict[x]))
-                    self.quit()
+                    if (dataDict[x] < 0):
+                        self.quit(2)
+                    else:
+                        self.quit(1)
+
                 elif (dataDict[x] > cut_off_voltage_high):
                     logger.critical('OVERVOLTAGE ON SLAVE %s REACHED, VOLTAGE NOW IS: %1.2f' % (x, dataDict[x]))
-                    self.quit()
+                    self.quit(2)
             else:
                 dataDict[x] = round(dataDict[x], 2)
         print(dataDict)
         return dataDict
 
-    def quit(self):
+    def quit(self, num):
         for x in get_pid("python"):
             process = psutil.Process(int(x))
             logger.debug("FOUND PYTHON PROCESS WITH ID: %d", x)
@@ -169,10 +173,19 @@ class ActualValues(Resource):
                 os.kill(int(x), signal.SIGTERM)
                 logger.debug("Sent SIGTERM to process ID: %d", int(x))
                 time.sleep(0.5)
-        au.setCurrent(0)
-        bb.setCurrentA(15)
-        time.sleep(5)
-        bb.setCurrentA(0)
+
+        if (num == 1):
+            bb.setCurrentA(0)
+            au.setCurrent(15)
+            time.sleep(15)
+            bb.setCurrent(0)
+
+        elif (num == 2):
+            au.setCurrent(0)
+            bb.setCurrentA(15)
+            time.sleep(5)
+            bb.setCurrentA(0)
+
         for num in range(numslaves + 1):
             requests.get('http://0.0.0.0:5000/BleedingControll/Sl' + str(num) + 'BlOff')
         #os.kill(int(os.getpid()), signal.SIGTERM)

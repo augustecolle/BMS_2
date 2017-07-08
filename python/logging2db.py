@@ -81,7 +81,7 @@ try:
             start = time.time()
             cur = con.cursor()
             voltageAll = canau.getAll([x for x in range(1,numslaves+1)])
-            #print(voltageAll)
+            print(voltageAll)
             voltagestr = str(time.time())
             #Only once in 2 measurements (2 seconds interval) because temp reading takes 1.1 seconds
             if (count % tempinterval == 0):

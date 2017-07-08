@@ -9,7 +9,7 @@ from libraries import EAEL9080 as bb
 from libraries import EAPSI8720 as au
 import math
 import csv
-import numpy as np 
+import numpy as np
 import time as tm
 import sys
 import requests
@@ -134,9 +134,9 @@ bb.startSerial('/dev/ttyUSB0', "02")
 bb.setRemoteControllOn()
 bb.setInputOn()
 bb.setCCMode()
-bb.setPowerA(1000)
+#bb.setPowerA(1000)
 bb.setVoltageA(16)
-bb.setCurrentA(0)
+bb.setCurrentA(15)
 bb.clearBuffer()
 
 
@@ -148,8 +148,6 @@ au.readAndTreat()
 au.setCurrent(0)
 au.setVoltage(16)
 au.setPower(500)
-print(au.getActualValues())
-au.getSetVoltage()
 
 #au.setCurrent(0.3)
 #
@@ -162,9 +160,18 @@ try:
     tm.sleep(1)
     
     while True:
-        print("setting current to 15A")
-        au.setCurrent(15)
-        tm.sleep(3*60*60)
+        if (tm.time()-ctime > refreshtime):
+            for x in [0,1,2,3]:
+                turnBleedingOff(x)
+            tm.sleep(pausetime)
+            global minVn
+            global minVv
+            minVn = None
+            minVv = None
+            ctime = tm.time()
+        topBalancing(getActualValues())
+        tm.sleep(1)
+        
     
 except Exception as e:
     for x in [0,1,2,3]:

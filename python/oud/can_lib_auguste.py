@@ -562,9 +562,6 @@ def exit_meting():
 
 def master_init(CNF1=0x0F, CNF2=0x90, CNF3=0x02):
     '''initiate master, first function to be called. Sets up the GPIO pins, interrupt routines and BFPCTRL which controlls the state of the bleeding resistor and de slave select of the analog ADC'''
-    CNF1=0x0F
-    CNF2=0x90
-    CNF3=0x02
     global already_initiated
     startSpi(10000, 0)
     startSpi(10000, 1)
@@ -604,7 +601,3 @@ def master_exit():
     already_initiated = 0
     GPIO.cleanup()
     sys.exit(0)
-
-
-def main():
-    master_init()

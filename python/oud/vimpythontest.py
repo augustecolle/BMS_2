@@ -1,4 +1,6 @@
 import imp
+import sys
+sys.path.append('/home/pi/bms/oud/')
 #
 #au = imp.load_source('module.name', '/home/pi/spi_auguste/spi_can/can_lib_auguste.py')
 
@@ -11,8 +13,10 @@ mean, std, pop = au.currentCal(100)
 import RPi.GPIO as GPIO
 
 au.getVoltageMaster()
+au.init_meting(slaves = [0x03, 0x02, 0x01])
 
-au.getSlaveVoltage([0x03, 0x02, 0x01])
+au.getVoltageSlaves([0x03, 0x02, 0x01])
+
 print("DONE")
 au.getVoltage()
 au.getRXBnSIDL()
