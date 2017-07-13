@@ -56,6 +56,13 @@ $scope.drawHighCh = function(num){
     if (num == 1 && init1 == 0){
       init1 = 1;
       var shiftOrNot1 = false;
+      var seriesList = [];
+      for (key in $rootScope.dict){
+        if (key != "Timestamp"){
+          seriesList.push({'name': key,
+             'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict[key].slice(Math.max($rootScope.dict[key].length - 30, 1))])})
+        }
+      }
       $rootScope.chart1Config = new Highcharts.Chart({
         chart: {
           renderTo: 'tab'+num.toString(),
@@ -68,32 +75,36 @@ $scope.drawHighCh = function(num){
                 console.log("turned shifting on");
               };
               var x = $rootScope.dict["Timestamp"][$rootScope.dict["Timestamp"].length - 1]*1000,
-                  y = $rootScope.dict["0"][$rootScope.dict["0"].length - 1];
-              series[0].addPoint([x, y], true, shiftOrNot1);
-              y = $rootScope.dict["1"][$rootScope.dict["1"].length - 1];
-              series[1].addPoint([x, y], true, shiftOrNot1);
-              y = $rootScope.dict["2"][$rootScope.dict["2"].length - 1];
-              series[2].addPoint([x, y], true, shiftOrNot1);
-              y = $rootScope.dict["3"][$rootScope.dict["3"].length - 1];
-              series[3].addPoint([x, y], true, shiftOrNot1);
-              y = $rootScope.dict["Current"][$rootScope.dict["Current"].length - 1];
-              series[4].addPoint([x, y], true, shiftOrNot1);
-              y = $rootScope.dict["temp1"][$rootScope.dict["temp1"].length - 1];
-              series[5].addPoint([x, y], true, shiftOrNot1);
-              y = $rootScope.dict["temp2"][$rootScope.dict["temp2"].length - 1];
-              series[6].addPoint([x, y], true, shiftOrNot1);
-              y = $rootScope.dict["temp3"][$rootScope.dict["temp3"].length - 1];
-              series[7].addPoint([x, y], true, shiftOrNot1);
-              y = $rootScope.dict["temp4"][$rootScope.dict["temp4"].length - 1];
-              series[8].addPoint([x, y], true, shiftOrNot1);
-              y = $rootScope.dict["Sl0Bl"][$rootScope.dict["Sl0Bl"].length - 1];
-              series[9].addPoint([x, y], true, shiftOrNot1);
-              y = $rootScope.dict["Sl1Bl"][$rootScope.dict["Sl1Bl"].length - 1];
-              series[10].addPoint([x, y], true, shiftOrNot1);
-              y = $rootScope.dict["Sl2Bl"][$rootScope.dict["Sl2Bl"].length - 1];
-              series[11].addPoint([x, y], true, shiftOrNot1);
-              y = $rootScope.dict["Sl3Bl"][$rootScope.dict["Sl3Bl"].length - 1];
-              series[12].addPoint([x, y], true, shiftOrNot1);
+                  y;
+              for (var key in $rootScope.dict){
+                //console.log(key);
+                if (key != "Timestamp"){
+                  y = $rootScope.dict[key][$rootScope.dict[key].length - 1];
+                  series[key].addPoint([x, y], true, shiftOrNot1);
+                }
+              };
+              //y = $rootScope.dict["2"][$rootScope.dict["2"].length - 1];
+              //series[2].addPoint([x, y], true, shiftOrNot1);
+              //y = $rootScope.dict["3"][$rootScope.dict["3"].length - 1];
+              //series[3].addPoint([x, y], true, shiftOrNot1);
+              //y = $rootScope.dict["Current"][$rootScope.dict["Current"].length - 1];
+              //series[4].addPoint([x, y], true, shiftOrNot1);
+              //y = $rootScope.dict["temp1"][$rootScope.dict["temp1"].length - 1];
+              //series[5].addPoint([x, y], true, shiftOrNot1);
+              //y = $rootScope.dict["temp2"][$rootScope.dict["temp2"].length - 1];
+              //series[6].addPoint([x, y], true, shiftOrNot1);
+              //y = $rootScope.dict["temp3"][$rootScope.dict["temp3"].length - 1];
+              //series[7].addPoint([x, y], true, shiftOrNot1);
+              //y = $rootScope.dict["temp4"][$rootScope.dict["temp4"].length - 1];
+              //series[8].addPoint([x, y], true, shiftOrNot1);
+              //y = $rootScope.dict["Sl0Bl"][$rootScope.dict["Sl0Bl"].length - 1];
+              //series[9].addPoint([x, y], true, shiftOrNot1);
+              //y = $rootScope.dict["Sl1Bl"][$rootScope.dict["Sl1Bl"].length - 1];
+              //series[10].addPoint([x, y], true, shiftOrNot1);
+              //y = $rootScope.dict["Sl2Bl"][$rootScope.dict["Sl2Bl"].length - 1];
+              //series[11].addPoint([x, y], true, shiftOrNot1);
+              //y = $rootScope.dict["Sl3Bl"][$rootScope.dict["Sl3Bl"].length - 1];
+              //series[12].addPoint([x, y], true, shiftOrNot1);
               }, 1000);
             }
           }
@@ -128,38 +139,39 @@ $scope.drawHighCh = function(num){
         rangeSelector: {
           selected: 1
         },
-        series: [
-          {'name': 'Cel0-voltage',
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['0'].slice(Math.max($rootScope.dict["0"].length - 30, 1))])},
-          {'name': 'Cel1-voltage',
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['1'].slice(Math.max($rootScope.dict['1'].length - 30, 1))])},
-          {'name': 'Cel2-voltage',
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['2'].slice(Math.max($rootScope.dict['2'].length - 30, 1))])},
-          {'name': 'Cel3-voltage',
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['3'].slice(Math.max($rootScope.dict['3'].length - 30, 1))])},
-          {'name': 'Current',
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Current'].slice(Math.max($rootScope.dict['Current'].length - 30, 1))])},
-          {'name': 'Cel0-temperature',
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp1'].slice(Math.max($rootScope.dict['temp1'].length - 30, 1))])},
-          {'name': 'Cel1-temperature',
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp2'].slice(Math.max($rootScope.dict['temp2'].length - 30, 1))])},
-          {'name': 'Cel2-temperature',
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp3'].slice(Math.max($rootScope.dict['temp3'].length - 30, 1))])},
-          {'name': 'Cel3-temperature',
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp4'].slice(Math.max($rootScope.dict['temp4'].length - 30, 1))])},
-          {'name': 'Cel0-bleeding',
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl0Bl'].slice(Math.max($rootScope.dict['Sl0Bl'].length - 30, 1))]),
-           'step': 'left'},
-          {'name': 'Cel1-bleeding',
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl1Bl'].slice(Math.max($rootScope.dict['Sl1Bl'].length - 30, 1))]),
-          'step': 'left'},
-          {'name': 'Cel2-bleeding',
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl2Bl'].slice(Math.max($rootScope.dict['Sl2Bl'].length - 30, 1))]),
-          'step': 'left'},
-          {'name': 'Cel3-bleeding',
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl3Bl'].slice(Math.max($rootScope.dict['Sl3Bl'].length - 30, 1))]),
-          'step': 'left'}
-          ],
+        series:seriesList, 
+          //[
+          //{'name': 'Cel0-voltage',
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['0'].slice(Math.max($rootScope.dict["0"].length - 30, 1))])},
+          //{'name': 'Cel1-voltage',
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['1'].slice(Math.max($rootScope.dict['1'].length - 30, 1))])},
+          //{'name': 'Cel2-voltage',
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['2'].slice(Math.max($rootScope.dict['2'].length - 30, 1))])},
+          //{'name': 'Cel3-voltage',
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['3'].slice(Math.max($rootScope.dict['3'].length - 30, 1))])},
+          //{'name': 'Current',
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Current'].slice(Math.max($rootScope.dict['Current'].length - 30, 1))])},
+          //{'name': 'Cel0-temperature',
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp1'].slice(Math.max($rootScope.dict['temp1'].length - 30, 1))])},
+          //{'name': 'Cel1-temperature',
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp2'].slice(Math.max($rootScope.dict['temp2'].length - 30, 1))])},
+          //{'name': 'Cel2-temperature',
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp3'].slice(Math.max($rootScope.dict['temp3'].length - 30, 1))])},
+          //{'name': 'Cel3-temperature',
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['temp4'].slice(Math.max($rootScope.dict['temp4'].length - 30, 1))])},
+          //{'name': 'Cel0-bleeding',
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl0Bl'].slice(Math.max($rootScope.dict['Sl0Bl'].length - 30, 1))]),
+          // 'step': 'left'},
+          //{'name': 'Cel1-bleeding',
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl1Bl'].slice(Math.max($rootScope.dict['Sl1Bl'].length - 30, 1))]),
+          //'step': 'left'},
+          //{'name': 'Cel2-bleeding',
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl2Bl'].slice(Math.max($rootScope.dict['Sl2Bl'].length - 30, 1))]),
+          //'step': 'left'},
+          //{'name': 'Cel3-bleeding',
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['Sl3Bl'].slice(Math.max($rootScope.dict['Sl3Bl'].length - 30, 1))]),
+          //'step': 'left'}
+          //],
         title: {
             text: "Battery all stats"
         }
@@ -167,6 +179,13 @@ $scope.drawHighCh = function(num){
     } else if (num == 2 && init2 == 0){
       init2 = 1;
       var shiftOrNot = false;
+      var seriesVoltages = [];
+      for (key in $rootScope.dict){
+        if (parseInt(key) || parseInt(key) == 0){
+          seriesVoltages.push(key);
+        }
+      }
+      console.log(seriesVoltages);
       $rootScope.chart2Config = new Highcharts.Chart({
         chart: {
           renderTo: 'tab'+num.toString(),
@@ -181,14 +200,22 @@ $scope.drawHighCh = function(num){
                 console.log("turned shifting on");
               };
               var x = $rootScope.dict["Timestamp"][$rootScope.dict["Timestamp"].length - 1]*1000,
-                  y = $rootScope.dict["0"][$rootScope.dict["0"].length - 1];
-              series[0].addPoint([x, y], true, shiftOrNot);
-              y = $rootScope.dict["1"][$rootScope.dict["1"].length - 1];
-              series[1].addPoint([x, y], true, shiftOrNot);
-              y = $rootScope.dict["2"][$rootScope.dict["2"].length - 1];
-              series[2].addPoint([x, y], true, shiftOrNot);
-              y = $rootScope.dict["3"][$rootScope.dict["3"].length - 1];
-              series[3].addPoint([x, y], true, shiftOrNot);
+                  y;
+              for (var key in $rootScope.dict){
+                if (parseInt(key)){
+                  console.log("key: ");
+                  console.log(key);
+                  y = $rootScope.dict[key][$rootScope.dict[key].length - 1];
+                  series[key].addPoint([x, y], true, shiftOrNot1);
+                }
+              };
+              //series[0].addPoint([x, y], true, shiftOrNot);
+              //y = $rootScope.dict["1"][$rootScope.dict["1"].length - 1];
+              //series[1].addPoint([x, y], true, shiftOrNot);
+              //y = $rootScope.dict["2"][$rootScope.dict["2"].length - 1];
+              //series[2].addPoint([x, y], true, shiftOrNot);
+              //y = $rootScope.dict["3"][$rootScope.dict["3"].length - 1];
+              //series[3].addPoint([x, y], true, shiftOrNot);
               }, 1000);
             }
           }
@@ -216,16 +243,17 @@ $scope.drawHighCh = function(num){
             text: "Voltage [V]"
           }
         },
-        series: [
-          {'name': 'Cel0-voltage',
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['0'].slice(Math.max($rootScope.dict['0'].length - 30, 1))])},
-          {'name': 'Cel1-voltage',                                                  
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['1'].slice(Math.max($rootScope.dict['1'].length - 30, 1))])},
-          {'name': 'Cel2-voltage',                                                  
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['2'].slice(Math.max($rootScope.dict['2'].length - 30, 1))])},
-          {'name': 'Cel3-voltage',                                                  
-           'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['3'].slice(Math.max($rootScope.dict['3'].length - 30, 1))])}
-          ],
+        series:seriesVoltages, 
+          //[
+          //{'name': 'Cel0-voltage',
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['0'].slice(Math.max($rootScope.dict['0'].length - 30, 1))])},
+          //{'name': 'Cel1-voltage',                                                  
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['1'].slice(Math.max($rootScope.dict['1'].length - 30, 1))])},
+          //{'name': 'Cel2-voltage',                                                  
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['2'].slice(Math.max($rootScope.dict['2'].length - 30, 1))])},
+          //{'name': 'Cel3-voltage',                                                  
+          // 'data': zip([$rootScope.dict["Timestamp"].slice(Math.max($rootScope.dict["Timestamp"].length - 30, 1)).map(function(x){return x*1000}), $rootScope.dict['3'].slice(Math.max($rootScope.dict['3'].length - 30, 1))])}
+          //],
         title: {
             text: "Battery voltage stats"
         }
@@ -447,18 +475,22 @@ $rootScope.dict = {
   $rootScope.getData = function(){
     $http.get("http://"+location.hostname+":5000/ActualValues")
     .then(function(response) {
-      //$rootScope.dict = response.data;
-      if ($rootScope.dict['Timestamp'].length > 1000){
+      console.log(response);
+      if ($rootScope.dict['Timestamp'].length > 100){
         $rootScope.dict["Current"].shift();
         $rootScope.dict["Timestamp"].shift();
         $rootScope.dict["0"].shift();
         $rootScope.dict["1"].shift();
         $rootScope.dict["2"].shift();
         $rootScope.dict["3"].shift();
-        $rootScope.dict["temp1"].shift();
-        $rootScope.dict["temp2"].shift();
-        $rootScope.dict["temp3"].shift();
-        $rootScope.dict["temp4"].shift();
+        $rootScope.dict["4"].shift();
+        $rootScope.dict["5"].shift();
+        $rootScope.dict["6"].shift();
+        $rootScope.dict["7"].shift();
+        //$rootScope.dict["temp1"].shift();
+        //$rootScope.dict["temp2"].shift();
+        //$rootScope.dict["temp3"].shift();
+        //$rootScope.dict["temp4"].shift();
         $rootScope.dict["Sl0Bl"].shift();
         $rootScope.dict["Sl1Bl"].shift();
         $rootScope.dict["Sl2Bl"].shift();
@@ -470,14 +502,22 @@ $rootScope.dict = {
       $rootScope.dict["1"].push(parseFloat(response.data["Sl1Voltage"].toFixed(5)));
       $rootScope.dict["2"].push(parseFloat(response.data["Sl2Voltage"].toFixed(5)));
       $rootScope.dict["3"].push(parseFloat(response.data["Sl3Voltage"].toFixed(5)));
-      $rootScope.dict["temp1"].push(parseFloat(response.data["temp1"].toFixed(2)));
-      $rootScope.dict["temp2"].push(parseFloat(response.data["temp2"].toFixed(2)));
-      $rootScope.dict["temp3"].push(parseFloat(response.data["temp3"].toFixed(2)));
-      $rootScope.dict["temp4"].push(parseFloat(response.data["temp4"].toFixed(2)));
+      $rootScope.dict["4"].push(parseFloat(response.data["Sl4Voltage"].toFixed(5)));
+      $rootScope.dict["5"].push(parseFloat(response.data["Sl5Voltage"].toFixed(5)));
+      $rootScope.dict["6"].push(parseFloat(response.data["Sl6Voltage"].toFixed(5)));
+      $rootScope.dict["7"].push(parseFloat(response.data["Sl7Voltage"].toFixed(5)));
+      //$rootScope.dict["temp1"].push(parseFloat(response.data["temp1"].toFixed(2)));
+      //$rootScope.dict["temp2"].push(parseFloat(response.data["temp2"].toFixed(2)));
+      //$rootScope.dict["temp3"].push(parseFloat(response.data["temp3"].toFixed(2)));
+      //$rootScope.dict["temp4"].push(parseFloat(response.data["temp4"].toFixed(2)));
       $rootScope.dict["Sl0Bl"].push(parseFloat(response.data["Sl0Bl"]));
       $rootScope.dict["Sl1Bl"].push(parseFloat(response.data["Sl1Bl"]));
       $rootScope.dict["Sl2Bl"].push(parseFloat(response.data["Sl2Bl"]));
       $rootScope.dict["Sl3Bl"].push(parseFloat(response.data["Sl3Bl"]));
+      $rootScope.dict["Sl4Bl"].push(parseFloat(response.data["Sl4Bl"]));
+      $rootScope.dict["Sl5Bl"].push(parseFloat(response.data["Sl5Bl"]));
+      $rootScope.dict["Sl6Bl"].push(parseFloat(response.data["Sl6Bl"]));
+      $rootScope.dict["Sl7Bl"].push(parseFloat(response.data["Sl7Bl"]));
     //$rootScope.dict["Sl4Voltage"] = response.data["Sl4Voltage"].toFixed(5));
     //$rootScope.dict["Sl5Voltage"] = response.data["Sl5Voltage"].toFixed(5);
     //$rootScope.dict["Sl6Voltage"] = response.data["Sl6Voltage"].toFixed(5);

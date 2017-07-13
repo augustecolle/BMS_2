@@ -15,7 +15,7 @@ import json
 from RPi import GPIO
 import ast
 import time
-import sqlite3 as lite
+import MySQLdb
 import sys
 import subprocess
 import numpy as np
@@ -35,17 +35,17 @@ logger = logging.getLogger('app')
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(25, GPIO.OUT) #slave select
 
-plogging = subprocess.Popen(['/usr/bin/python3', 'logging2db.py'])
+plogging = subprocess.Popen(['/usr/bin/python2', 'logging2db.py'])
 
-au.startSerial('/dev/ttyUSB1')
+au.startSerial('/dev/ttyUSB0')
 time.sleep(0.1)
 au.remoteControllOn()
 au.readAndTreat()
 au.setCurrent(0)
-au.setVoltage(16)
+au.setVoltage(17)
 au.setPower(500)
-
-bb.startSerial('/dev/ttyUSB0', "02")
+#
+bb.startSerial('/dev/ttyUSB2', "02")
 bb.setRemoteControllOn()
 time.sleep(0.1)
 bb.readAndTreat()
@@ -54,7 +54,7 @@ bb.setInputOn()
 bb.setCCMode()
 bb.clearBuffer()
 bb.setPowerA(1000)
-bb.setVoltageA(17)
+bb.setVoltageA(30)
 bb.setCurrentA(0)
 bb.clearBuffer()
 
@@ -103,7 +103,7 @@ def get_pid(name):
 #plogging = subprocess.Popen([sys.executable, './logging2db.py'])
 time.sleep(2) #waiting for current calibration
 
-numslaves = 3 #link to database settings
+numslaves = 7 #link to database settings
 con = None
 
 app = Flask(__name__)
@@ -118,7 +118,8 @@ cut_off_voltage_high = 4.0
 #Sl0Bl is the master
 headerBl = ["Sl0Bl", "Sl1Bl", "Sl2Bl", "Sl3Bl", "Sl4Bl", "Sl5Bl", "Sl6Bl", "Sl7Bl", "Sl8Bl", "Sl9Bl", "Sl10Bl", "Sl11Bl", "Sl12Bl", "Sl13Bl", "Sl14Bl", "Sl15Bl"]
 
-bldict = {key:value for (key, value) in zip(headerBl, [0]*len(headerBl))}
+with open('blconfr.json', 'r') as f:
+    bldict = json.load(f)
 
 class ActualValues(Resource):
     global cut_off_voltage_low
@@ -126,13 +127,14 @@ class ActualValues(Resource):
     global logger
     def get(self):
         dataDict = {}
-        con = lite.connect('../database/test.db', timeout = 5.0)
-        with con:
-            cur = con.cursor()
+        db = MySQLdb.connect(host="localhost", user="python", passwd="pypasswd", db="test")
+        with db:
+            cur = db.cursor()
             success = False
             while not success:
                 try:
                     cur.execute("select * from MostRecentMeasurement")
+                    db.commit()
                     success = True
                 except:
                     time.sleep(0.01)
@@ -143,7 +145,7 @@ class ActualValues(Resource):
             for (key, val) in tempconf.tempmap.items():
                 if key in dataDict:
                     dataDict[val] = dataDict.pop(key)
-        if con: con.close()
+        if db: db.close()
         for x in dataDict.keys():
             if "Voltage" in x:
                 #print(x)
@@ -227,17 +229,18 @@ class BleedingControll(Resource):
 
 class write2db(Resource):
     try:
-        con = lite.connect('../database/test.db')
-        cur = con.cursor()
-        cur.execute('SELECT SQLITE_VERSION()')
+        db = MySQLdb.connect(host="localhost", user="python", passwd="pypasswd", db="test")
+        cur = db.cursor()
+        cur.execute('SELECT VERSION()')
+        db.commit()
         data = cur.fetchone()
-        print("SQLITE version: " + str(data))
-    except lite.Error as e:
+        print("MySQL version: " + str(data))
+    except (MySQLdb.Error, MySQLdb.Warning) as e:
         print("Error " + str(e.args[0]))
         sys.exit(1)
     finally:
-        if con:
-            con.close()
+        if db:
+            db.close()
 
     def get(self):
         pass

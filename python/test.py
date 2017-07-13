@@ -42,7 +42,7 @@ blMap = {
 def turnBleedingOn(slave):
     numtimes = 10
     while (numtimes > 0):
-        r = requests.get('http://10.128.80.6:5000/BleedingControll/Sl' + str(slave) + 'BlOn')
+        r = requests.get('http://0.0.0.0:5000/BleedingControll/Sl' + str(slave) + 'BlOn')
         if (r.status_code == 200):
             return r.status_code
         else:
@@ -53,7 +53,7 @@ def turnBleedingOn(slave):
 def turnBleedingOff(slave):
     numtimes = 10
     while (numtimes > 0):
-        r = requests.get('http://10.128.80.6:5000/BleedingControll/Sl' + str(slave) + 'BlOff')
+        r = requests.get('http://0.0.0.0:5000/BleedingControll/Sl' + str(slave) + 'BlOff')
         if (r.status_code == 200):
             return r.status_code
         else:
@@ -63,7 +63,7 @@ def turnBleedingOff(slave):
 
 def getActualValues():
     '''returns dictionary of voltages with value of voltage as keys for easy sorting'''
-    r = requests.get('http://10.128.80.6:5000/ActualValues')
+    r = requests.get('http://0.0.0.0:5000/ActualValues')
     res = dict(r.json())
     ret = {}
     for x in res.keys():
@@ -157,7 +157,7 @@ refreshtime = 60*60*2
 pausetime = 180
 ctime = tm.time()
 try:
-    for x in [0,1,2,3]:
+    for x in range(8):
         turnBleedingOff(x)
     tm.sleep(1)
     

@@ -9,11 +9,11 @@ from libraries import can_lib_auguste as canau
 import temp_reading_multithreading as ds18b20
 import time
 import RPi.GPIO as GPIO
-import sqlite3 as lite
+import MySQLdb
 import sys
 import json
 
-ds18b20.read_temp_raw() #start temperature conversion in sensors
+#ds18b20.read_temp_raw() #start temperature conversion in sensors
 tempinterval = 2
 
 #import logger
@@ -39,7 +39,7 @@ signal.signal(signal.SIGTERM, signal_handler)
 signal.signal(signal.SIGINT, signal_handler)
 #signal.signal(signal.SIGUSR1, signal_bleeding)
 
-numslaves = 3 #link to database settings
+numslaves = 7 #link to database settings
 loginterval = 1 #link to database settings
 logging = 1 #link to database settings
 
@@ -70,45 +70,49 @@ for sensor in ds18b20.device_folder:
 
 try:
     canau.master_init()
-    canau.init_meting([i for i in range(numslaves + 1)])
+    slave_addresses = [0x08, 0x21, 0x02, 0x19, 0x03, 0x15, 0x16]
+    canau.init_meting(slave_addresses)
     canau.currentCal(50)
     firstloop = 1
     count = 0
     tempcount = 0
     while True:
-        con = lite.connect('../database/test.db', timeout = 15.0)
-        with con:
+        #con = lite.connect('../database/test.db', timeout = 15.0)
+        db = MySQLdb.connect(host="localhost", user="python", passwd="pypasswd", db="test")
+        with db:
             start = time.time()
-            cur = con.cursor()
-            voltageAll = canau.getAll([x for x in range(1,numslaves+1)])
+            cur = db.cursor()
+            voltageAll = canau.getAll(slave_addresses)
             print(voltageAll)
             voltagestr = str(time.time())
             #Only once in 2 measurements (2 seconds interval) because temp reading takes 1.1 seconds
-            if (count % tempinterval == 0):
-                tmp = ds18b20.read_temp()
-                if(len(tmp.values()) == 4):
-                    tempdict = tmp
-                    count = 0
-                else:
-                    logger.debug("only got %d values from tempsensors", len(tmp))
-                ds18b20.read_temp_raw()
+            #if (count % tempinterval == 0):
+            #    tmp = ds18b20.read_temp()
+            #    if(len(tmp.values()) == 4):
+            #        tempdict = tmp
+            #        count = 0
+            #    else:
+            #        logger.debug("only got %d values from tempsensors", len(tmp))
+            #    ds18b20.read_temp_raw()
             for numslave in range(numslaves + 2):
                 voltagestr = voltagestr + "," + str(voltageAll[numslave])
             for numslave in range(numslaves + 2, numslaves*2 +3):
                 voltagestr = voltagestr + "," + str(voltageAll[numslave])
-
-            for temp in sensorlist:
-                voltagestr = voltagestr + "," + str(tempdict[temp])
+            #for temp in sensorlist:
+            #    voltagestr = voltagestr + "," + str(tempdict[temp])
             if (firstloop):
                 cur.execute("DROP TABLE IF EXISTS Metingen")
                 cur.execute("CREATE TABLE Metingen("+ dbTable +")")
                 firstloop = 0
             cur.execute("DROP TABLE IF EXISTS MostRecentMeasurement")
             cur.execute("CREATE TABLE MostRecentMeasurement("+ dbTable +")")
+            db.commit()
             cur.execute("INSERT INTO Metingen VALUES("+voltagestr+")")
+            db.commit()
             cur.execute("INSERT INTO MostRecentMeasurement VALUES("+voltagestr+")")
+            db.commit()
         sltime = loginterval - (time.time() - start)
-        con.close()
+        db.close()
         count = count + 1
         with open('blconf.json', 'r') as f:
             try:
@@ -128,7 +132,7 @@ try:
                 canau.setBleedingOff(int(list(filter(str.isdigit, str(key)))[0]))
         bldict = bldictn.copy()
         if (sltime > 0 and sltime < 0.9): time.sleep(sltime)
-except lite.Error as e:
+except (MySQLdb.Error, MySQLdb.Warning) as e:
     logger.debug("An error occurred: " + e.args[0])
 except Exception as e:
     print(str(e.args[0]))
