@@ -43,22 +43,26 @@ numslaves = 7 #link to database settings
 loginterval = 1 #link to database settings
 logging = 1 #link to database settings
 
+slave_addresses = [0x08, 0x21, 0x02, 0x19, 0x03, 0x15, 0x16]
+
 tablestruct = ["Timestamp REAL", "Current REAL", "MVoltage REAL", "Sl1Voltage REAL", "Sl2Voltage REAL", "Sl3Voltage REAL", "Sl4Voltage REAL", "Sl5Voltage REAL", "Sl6Voltage REAL", "Sl7Voltage REAL", "Sl8Voltage REAL", "Sl9Voltage REAL", "Sl10Voltage REAL", "Sl11Voltage REAL", "Sl12Voltage REAL", "Sl13Voltage REAL", "Sl14Voltage REAL", "Sl15Voltage REAL"]
 headerBl = ["Sl0Bl", "Sl1Bl", "Sl2Bl", "Sl3Bl", "Sl4Bl", "Sl5Bl", "Sl6Bl", "Sl7Bl", "Sl8Bl", "Sl9Bl", "Sl10Bl", "Sl11Bl", "Sl12Bl", "Sl13Bl", "Sl14Bl", "Sl15Bl"]
 
-dbTable = "Timestamp REAL"
+dbTable = "Timestamp REAL, Current REAL, Sl0Voltage REAL"
 
-for x in range(1,numslaves+3):
-    dbTable = dbTable + ", " + tablestruct[x]
+for x in slave_addresses:
+    dbTable = dbTable + ", " + "Sl" + str(x) + "Voltage REAL"
 
-for x in range(numslaves + 1):
-    dbTable = dbTable + ", " + headerBl[x] + " REAL"
+dbTable = dbTable + ", " + "Sl0Bl REAL"
+
+for x in slave_addresses:
+    dbTable = dbTable + ", " + "Sl" + str(x) + "Bl REAL"
 
 sensorlist = []
 tempdict = {}
 
-global bllist
-bllist = [0 for x in range(numslaves + 1)]
+#global bllist
+#bllist = [0 for x in range(numslaves + 1)]
 
 for sensor in ds18b20.device_folder:
     #print(sensor[-15:])
@@ -70,7 +74,6 @@ for sensor in ds18b20.device_folder:
 
 try:
     canau.master_init()
-    slave_addresses = [0x08, 0x21, 0x02, 0x19, 0x03, 0x15, 0x16]
     canau.init_meting(slave_addresses)
     canau.currentCal(50)
     firstloop = 1
@@ -83,7 +86,6 @@ try:
             start = time.time()
             cur = db.cursor()
             voltageAll = canau.getAll(slave_addresses)
-            print(voltageAll)
             voltagestr = str(time.time())
             #Only once in 2 measurements (2 seconds interval) because temp reading takes 1.1 seconds
             #if (count % tempinterval == 0):
@@ -94,10 +96,14 @@ try:
             #    else:
             #        logger.debug("only got %d values from tempsensors", len(tmp))
             #    ds18b20.read_temp_raw()
-            for numslave in range(numslaves + 2):
-                voltagestr = voltagestr + "," + str(voltageAll[numslave])
-            for numslave in range(numslaves + 2, numslaves*2 +3):
-                voltagestr = voltagestr + "," + str(voltageAll[numslave])
+
+            #for numslave in range(numslaves + 2):
+            #    voltagestr = voltagestr + "," + str(voltageAll[numslave])
+            #for numslave in range(numslaves + 2, numslaves*2 +3):
+            #    voltagestr = voltagestr + "," + str(voltageAll[numslave])
+            for x in voltageAll:
+                voltagestr = voltagestr + "," + str(x)
+
             #for temp in sensorlist:
             #    voltagestr = voltagestr + "," + str(tempdict[temp])
             if (firstloop):
@@ -133,7 +139,7 @@ try:
         bldict = bldictn.copy()
         if (sltime > 0 and sltime < 0.9): time.sleep(sltime)
 except (MySQLdb.Error, MySQLdb.Warning) as e:
-    logger.debug("An error occurred: " + e.args[0])
+    logger.debug("An error occurred: " + str(e.args[0]))
 except Exception as e:
     print(str(e.args[0]))
     GPIO.cleanup()

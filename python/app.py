@@ -109,14 +109,14 @@ con = None
 app = Flask(__name__)
 api = Api(app)
 
-header = ["Timestamp", "Current", "MVoltage", "Sl1Voltage", "Sl2Voltage", "Sl3Voltage", "Sl4Voltage", "Sl5Voltage", "Sl6Voltage", "Sl7Voltage", "Sl8Voltage", "Sl9Voltage", "Sl10Voltage", "Sl11Voltage", "Sl12Voltage", "Sl13Voltage", "Sl14Voltage", "Sl15Voltage"]
+#header = ["Timestamp", "Current", "MVoltage", "Sl1Voltage", "Sl2Voltage", "Sl3Voltage", "Sl4Voltage", "Sl5Voltage", "Sl6Voltage", "Sl7Voltage", "Sl8Voltage", "Sl9Voltage", "Sl10Voltage", "Sl11Voltage", "Sl12Voltage", "Sl13Voltage", "Sl14Voltage", "Sl15Voltage"]
 global cut_off_voltage_low
 cut_off_voltage_low = 2.8
 global cut_off_voltage_high
 cut_off_voltage_high = 4.0
 
 #Sl0Bl is the master
-headerBl = ["Sl0Bl", "Sl1Bl", "Sl2Bl", "Sl3Bl", "Sl4Bl", "Sl5Bl", "Sl6Bl", "Sl7Bl", "Sl8Bl", "Sl9Bl", "Sl10Bl", "Sl11Bl", "Sl12Bl", "Sl13Bl", "Sl14Bl", "Sl15Bl"]
+#headerBl = ["Sl0Bl", "Sl1Bl", "Sl2Bl", "Sl3Bl", "Sl4Bl", "Sl5Bl", "Sl6Bl", "Sl7Bl", "Sl8Bl", "Sl9Bl", "Sl10Bl", "Sl11Bl", "Sl12Bl", "Sl13Bl", "Sl14Bl", "Sl15Bl"]
 
 with open('blconfr.json', 'r') as f:
     bldict = json.load(f)
@@ -141,6 +141,8 @@ class ActualValues(Resource):
             row = cur.fetchone()
             colNames = list(map(lambda x: x[0], cur.description))
             dataDict = dict(zip(colNames, row))
+            print("DATADICT")
+            print(dataDict)
             # map keys to their number of rings on the data cable
             for (key, val) in tempconf.tempmap.items():
                 if key in dataDict:

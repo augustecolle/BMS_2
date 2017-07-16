@@ -158,7 +158,7 @@ pausetime = 180
 ctime = tm.time()
 try:
     for x in range(8):
-        turnBleedingOff(x)
+        turnBleedingOn(x)
     tm.sleep(1)
     
     while True:
