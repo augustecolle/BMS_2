@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+#Test procedure 2:
+#1) Opladen tot 100% SOC
+#2) Ontladen tot 40% SOC (72 Ah want SOC tov werkelijke capaciteit)
+#3) Opladen tot 60% SOC (24 Ah opladen)
+#4) Ontladen tot 40% SOC (24 Ah ontladen)
+#5) Opladen tot 100% SOC (72 Ah)
+
 import os
 import logging
 import logconf
@@ -9,8 +16,7 @@ from libraries import EAEL9080 as bb
 from libraries import EAPSI8720 as au
 import math
 import csv
-import numpy as np
-import time as tm
+import numpy as np import time as tm
 import sys
 import requests
 import re
@@ -135,7 +141,7 @@ tm.sleep(1)
 au.startSerial('/dev/ttyUSB0')
 au.remoteControllOn()
 au.readAndTreat()
-au.setCurrent(0)
+au.setCurrent(15)
 au.setVoltage(16.)
 au.setPower(500)
 au.getSetVoltage()
@@ -148,21 +154,70 @@ ctime = tm.time()
 
 setflag = True
 
+def opladen100SOC(interval = 1):
+    chargeFlag = True
+    au.setCurrent(15.)
+    voltages = getActualValues().keys()
+    while (sum(voltages) < 3.96*4):
+        ctime = tm.time()
+        voltages = getActualValues()
+        if (max(voltages.keys()) > 3.8 and chargeFlag):
+            au.setCurrent(1.)
+            chargeFlag = False
+        if not chargeFlag:
+            topBalancing(voltages)
+        tm.sleep(interval - (tm.time() - ctime))
+
+def ontladenSOC(Ah):
+    '''Ah is the amount of amperehoures that needs to be discharged. This method takes a fixed interval of 20 minutes charging -- 1 houre relaxation untill the desired Ah is discharged.'''
+    dischargeAh     = float(Ah)            #in Amperehoure
+    dischargeTime   = dischargeAh/15.*3600  #in seconds
+    starttime       = tm.time()
+    interval        = 20*60                 #discharge interval in seconds
+    intervalstart   = tm.time()
+    bb.setCurrentA(15.)
+    ctime           = tm.time()
+    while((ctime - starttime) < dischargeTime):
+        ctime = tm.time()
+        if ((ctime - intervalstart) > interval):
+            bb.setCurrentA(0.)
+            tm.sleep(60*60)
+            intervalstart = tm.time()
+            bb.setCurrentA(15.)
+        tm.sleep(1 - (tm.time() - ctime))
+    bb.setCurrentA(0.)
+    return 1
+
+def opladenSOC(Ah):
+    '''Ah is the amount of amperehoures that needs to be charged. This method takes a fixed interval of 20 minutes charging -- 1 houre relaxation untill the desired Ah is charged.'''
+    bb.setCurrentA(0.)
+    chargeAh     = float(Ah)           #in Amperehoure
+    chargeTime   = chargeAh/15.*3600    #in seconds
+    starttime       = tm.time()
+    interval        = 20*60             #charge interval in seconds
+    intervalstart   = tm.time()
+    au.setCurrentA(15.)
+    ctime           = tm.time()
+    while((ctime - starttime) < chargeTime):
+        ctime = tm.time()
+        if ((ctime - intervalstart) > interval):
+            au.setCurrent(0.)
+            tm.sleep(60*60)
+            intervalstart = tm.time()
+            au.setCurrent(15.)
+        tm.sleep(1 - (tm.time() - ctime))
+    au.setCurrent(0.)
+    return 1
+
+
 try:
-    while True:
-        try:
-            a = getActualValues()
-            topBalancing(a)
-            print("try")
-        except:
-            print("EMPTY MAX VALUE")
-        tm.sleep(1)
-        #print("setting current to 15A")
-        if (setflag):
-            au.setCurrent(.150)
-            setflag = False
-        #tm.sleep(3*60*60)
-    
+    #test 2
+    opladen100SOC()
+    ontladenSOC(72)
+    opladenSOC(24)
+    ontladenSOC(24)
+    opladenSOC(72)
+
 except Exception as e:
     for x in [0,1,2,3]:
         turnBleedingOff(x)
@@ -181,4 +236,7 @@ except Exception as e:
     bb.stopSerial()
     au.stopSerial()   
     sys.exit(1)
+
+print("TEST DONE")
+sys.exit(1)
 

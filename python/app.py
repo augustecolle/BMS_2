@@ -10,7 +10,7 @@ from flask_restful import Resource, Api
 #from libraries import can_lib_auguste as canau
 from libraries import EAEL9080 as bb
 from libraries import EAPSI8720 as au
-import temp_reading_multithreading as ds18b20
+#import temp_reading_multithreading as ds18b20
 import json
 from RPi import GPIO
 import ast
@@ -40,21 +40,23 @@ plogging = subprocess.Popen(['/usr/bin/python2', 'logging2db.py'])
 au.startSerial('/dev/ttyUSB0')
 time.sleep(0.1)
 au.remoteControllOn()
+au.getActualValues()
 au.readAndTreat()
 au.setCurrent(0)
 au.setVoltage(17)
 au.setPower(500)
 #
-bb.startSerial('/dev/ttyUSB2', "02")
+bb.startSerial('/dev/ttyUSB1', "02")
 bb.setRemoteControllOn()
 time.sleep(0.1)
+bb.getActualValues()
 bb.readAndTreat()
 bb.readAndTreat()
 bb.setInputOn()
 bb.setCCMode()
 bb.clearBuffer()
 bb.setPowerA(1000)
-bb.setVoltageA(30)
+bb.setVoltageA(16.)
 bb.setCurrentA(0)
 bb.clearBuffer()
 
@@ -90,7 +92,7 @@ def signal_handler(signal_s, frame):
         logger.debug("FOUND PYTHON PROCESS WITH ID: %d IN SIGNAL HANDLER OF APP.PY", x)
         logger.debug("Content of process.cmdline(): %s", process.cmdline())
         if (int(x) != int(os.getpid()) and process.cmdline() != [] and 'test' in process.cmdline()[1]):
-            os.kill(int(x), signal.SIGTERM)
+            os.kill(int(x), signal.SIGKILL)
     GPIO.cleanup()
     sys.exit(1)
 
@@ -113,7 +115,7 @@ api = Api(app)
 global cut_off_voltage_low
 cut_off_voltage_low = 2.8
 global cut_off_voltage_high
-cut_off_voltage_high = 4.0
+cut_off_voltage_high = 4.
 
 #Sl0Bl is the master
 #headerBl = ["Sl0Bl", "Sl1Bl", "Sl2Bl", "Sl3Bl", "Sl4Bl", "Sl5Bl", "Sl6Bl", "Sl7Bl", "Sl8Bl", "Sl9Bl", "Sl10Bl", "Sl11Bl", "Sl12Bl", "Sl13Bl", "Sl14Bl", "Sl15Bl"]
@@ -127,27 +129,34 @@ class ActualValues(Resource):
     global logger
     def get(self):
         dataDict = {}
-        db = MySQLdb.connect(host="localhost", user="python", passwd="pypasswd", db="test")
-        with db:
-            cur = db.cursor()
-            success = False
-            while not success:
-                try:
-                    cur.execute("select * from MostRecentMeasurement")
-                    db.commit()
-                    success = True
-                except:
-                    time.sleep(0.01)
-            row = cur.fetchone()
-            colNames = list(map(lambda x: x[0], cur.description))
-            dataDict = dict(zip(colNames, row))
-            print("DATADICT")
-            print(dataDict)
-            # map keys to their number of rings on the data cable
-            for (key, val) in tempconf.tempmap.items():
-                if key in dataDict:
-                    dataDict[val] = dataDict.pop(key)
-        if db: db.close()
+        #db = MySQLdb.connect(host="localhost", user="python", passwd="pypasswd", db="test")
+        #with db:
+        #    cur = db.cursor()
+        #    success = False
+        #    while not success:
+        #        try:
+        #            cur.execute("select * from MostRecentMeasurement")
+        #            row = cur.fetchone()
+        #            if (row):
+        #                success = True
+        #        except:
+        #            time.sleep(0.01)
+        #    colNames = list(map(lambda x: x[0], cur.description))
+        #    #print(colNames)
+        #    #print(row)
+        #    dataDict = dict(zip(colNames, row))
+        #    #print("DATADICT")
+        #    #print(dataDict)
+        #    # map keys to their number of rings on the data cable
+        #    #for (key, val) in tempconf.tempmap.items():
+        #    #    if key in dataDict:
+        #    #        dataDict[val] = dataDict.pop(key)
+        #if db: db.close()
+        with open("writeDBMR.txt",  'r') as f:
+            row = f.readlines()
+        header  = row[0].strip().split(', ')
+        data    = [float(x) for x in row[1].strip().split(', ')]
+        dataDict = dict(zip(header, data))
         for x in dataDict.keys():
             if "Voltage" in x:
                 #print(x)
@@ -166,7 +175,7 @@ class ActualValues(Resource):
                     self.quit(2)
             else:
                 dataDict[x] = round(dataDict[x], 2)
-        print(dataDict)
+        #print(dataDict)
         return dataDict
 
     def quit(self, num):
@@ -174,8 +183,8 @@ class ActualValues(Resource):
             process = psutil.Process(int(x))
             logger.debug("FOUND PYTHON PROCESS WITH ID: %d", x)
             if (int(x) != int(os.getpid()) and ('test' in process.cmdline()[1])):
-                os.kill(int(x), signal.SIGTERM)
-                logger.debug("Sent SIGTERM to process ID: %d", int(x))
+                logger.debug("Sent SIGKILL to process ID: %d", int(x))
+                os.kill(int(x), signal.SIGKILL)
                 time.sleep(0.5)
 
         if (num == 1):
@@ -201,8 +210,8 @@ class BleedingControll(Resource):
     #    return bldict[slave_id]
 
     def get(self, slave_id):
-        print("GET")
-        print(slave_id)
+        #print("GET")
+        #print(slave_id)
         if (slave_id[-2:].lower() == 'on'):
             bldict[slave_id[:-2]] = 1 
             try:
@@ -292,4 +301,5 @@ def set_allow_origin(resp):
 
 if __name__ == "__main__":
     app.run(debug=False, host="0.0.0.0", port=5000, threaded=True)
+    print("DONE")
 

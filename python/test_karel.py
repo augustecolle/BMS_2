@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+#Test procedure 1:
+#1) Opladen tot 100% SOC
+#2) Ontladen tot 25% SOC (90 Ah want SOC tov werkelijke capaciteit)
+#3) Opladen tot 75% SOC (60 Ah opladen)
+#4) Ontladen tot 25% SOC (60 Ah ontladen)
+#5) Opladen tot 100% SOC (90 Ah)
+
 import os
 import logging
 import logconf
@@ -87,10 +94,8 @@ def topBalancing(actualValues, blAcc = 1e-2):
 
         for i in range(len(diffVal)):
             if diffVal[i] > blAcc and values[i] > 3.6:
-                print("BleedingOn")
                 turnBleedingOn(blMap[actualValues[values[i]]])
             else:
-                print("Bleeding Off")
                 turnBleedingOff(blMap[actualValues[values[i]]])
     else:
         return -1
@@ -125,8 +130,10 @@ bb.setRemoteControllOn()
 bb.setInputOn()
 bb.setCCMode()
 bb.setPowerA(1000)
-bb.setVoltageA(17.)
-bb.setCurrentA(0)
+bb.setVoltageA(17)
+bb.setCurrentA(15)
+bb.getActualValues()
+bb.getLoadControl()
 bb.clearBuffer()
 
 
@@ -135,7 +142,7 @@ tm.sleep(1)
 au.startSerial('/dev/ttyUSB0')
 au.remoteControllOn()
 au.readAndTreat()
-au.setCurrent(0)
+au.setCurrent(0.)
 au.setVoltage(16.)
 au.setPower(500)
 au.getSetVoltage()
@@ -148,21 +155,81 @@ ctime = tm.time()
 
 setflag = True
 
+def opladen100SOC(interval = 1):
+    chargeFlag = True
+    au.setCurrent(15.)
+    voltages = getActualValues().keys()
+    while (sum(voltages) < 3.96*4):
+        ctime = tm.time()
+        print(ctime)
+        voltages = getActualValues()
+        if (max(voltages.keys()) > 3.8 and chargeFlag):
+            au.setCurrent(1.)
+            chargeFlag = False
+        if not chargeFlag:
+            topBalancing(voltages)
+        tm.sleep(interval - (tm.time() - ctime))
+
+def ontladenSOC(Ah):
+    '''Ah is the amount of amperehoures that needs to be discharged. This method takes a fixed interval of 20 minutes charging -- 1 houre relaxation untill the desired Ah is discharged.'''
+    dischargeAh     = float(Ah)            #in Amperehoure
+    dischargeTime   = dischargeAh/15.*3600  #in seconds
+    starttime       = tm.time()
+    interval        = 20*60                 #discharge interval in seconds
+    intervalstart   = tm.time()
+    au.setCurrent(0.)
+    au.clearBuffer()
+    bb.setCurrentA(15.)
+    ctime           = tm.time()
+    while((ctime - starttime) < dischargeTime):
+        ctime = tm.time()
+        print(ctime)
+        if ((ctime - intervalstart) > interval):
+            print("turinging of current for relaxation")
+            bb.setCurrentA(0.)
+            tm.sleep(60*60)
+            intervalstart = tm.time()
+            bb.setCurrentA(15.)
+        tm.sleep(1 - (tm.time() - ctime))
+    bb.setCurrentA(0.)
+    return 1
+
+def opladenSOC(Ah):
+    '''Ah is the amount of amperehoures that needs to be charged. This method takes a fixed interval of 20 minutes charging -- 1 houre relaxation untill the desired Ah is charged.'''
+    bb.clearBuffer()
+    bb.setCurrentA(0.)
+    chargeAh     = float(Ah)           #in Amperehoure
+    chargeTime   = chargeAh/15.*3600    #in seconds
+    starttime       = tm.time()
+    interval        = 20*60             #charge interval in seconds
+    intervalstart   = tm.time()
+    au.setCurrentA(15.)
+    ctime           = tm.time()
+    while((ctime - starttime) < chargeTime):
+        ctime = tm.time()
+        print(ctime)
+        if ((ctime - intervalstart) > interval):
+            au.setCurrent(0.)
+            tm.sleep(60*60)
+            intervalstart = tm.time()
+            au.setCurrent(15.)
+        tm.sleep(1 - (tm.time() - ctime))
+    au.setCurrent(0.)
+    return 1
+
+
 try:
-    while True:
-        try:
-            a = getActualValues()
-            topBalancing(a)
-            print("try")
-        except:
-            print("EMPTY MAX VALUE")
-        tm.sleep(1)
-        #print("setting current to 15A")
-        if (setflag):
-            au.setCurrent(.150)
-            setflag = False
-        #tm.sleep(3*60*60)
-    
+    #test 1
+    print("Start opladen tot 100%")
+    opladen100SOC()
+    print("Start ontladen tot 40%")
+    ontladenSOC(90)
+    print("Start opladen tot 40%")
+    opladenSOC(60)
+    print("Start ontladen tot 40%")
+    ontladenSOC(60)
+    print("Start opladen tot 100% (laatste stap)")
+    opladenSOC(90)
 except Exception as e:
     for x in [0,1,2,3]:
         turnBleedingOff(x)
@@ -182,3 +249,5 @@ except Exception as e:
     au.stopSerial()   
     sys.exit(1)
 
+print("TEST DONE")
+sys.exit(1)
