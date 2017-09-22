@@ -33,30 +33,30 @@ global logger
 logger = logging.getLogger('app')
 
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(25, GPIO.OUT) #slave select
+GPIO.setup(17, GPIO.OUT) #slave select
 
-plogging = subprocess.Popen(['/usr/bin/python2', 'logging2db.py'])
 
-au.startSerial('/dev/ttyUSB0')
+au.startSerial('/dev/ttyUSB1')
 time.sleep(0.1)
 au.remoteControllOn()
-au.getActualValues()
+#au.getActualValues()
 au.readAndTreat()
-au.setCurrent(0)
-au.setVoltage(17)
+au.readAndTreat()
+au.setCurrent(0.)
+au.setVoltage(32)
 au.setPower(500)
 #
-bb.startSerial('/dev/ttyUSB1', "02")
+bb.startSerial('/dev/ttyUSB0', "02")
 bb.setRemoteControllOn()
 time.sleep(0.1)
-bb.getActualValues()
+#bb.getActualValues()
 bb.readAndTreat()
 bb.readAndTreat()
 bb.setInputOn()
 bb.setCCMode()
 bb.clearBuffer()
 bb.setPowerA(1000)
-bb.setVoltageA(16.)
+bb.setVoltageA(24.)
 bb.setCurrentA(0)
 bb.clearBuffer()
 
@@ -93,7 +93,9 @@ def signal_handler(signal_s, frame):
         logger.debug("Content of process.cmdline(): %s", process.cmdline())
         if (int(x) != int(os.getpid()) and process.cmdline() != [] and 'test' in process.cmdline()[1]):
             os.kill(int(x), signal.SIGKILL)
+    plogging.kill()
     GPIO.cleanup()
+    quit()
     sys.exit(1)
 
 signal.signal(signal.SIGTERM, signal_handler)
@@ -157,13 +159,15 @@ class ActualValues(Resource):
         header  = row[0].strip().split(', ')
         data    = [float(x) for x in row[1].strip().split(', ')]
         dataDict = dict(zip(header, data))
+        print("Datadict:")
+        print(dataDict)
         for x in dataDict.keys():
             if "Voltage" in x:
                 #print(x)
                 dataDict[x] = round(dataDict[x], 5)
                 #print(round(dataDict[x], 5))
                 #print(dataDict[x])
-                if (dataDict[x] < cut_off_voltage_low):
+                if (dataDict[x] < cut_off_voltage_low and dataDict[x] >= 0):
                     logger.critical('UNDERVOLTAGE ON SLAVE %s REACHED, VOLTAGE NOW IS: %1.2f' % (x, dataDict[x]))
                     if (dataDict[x] < 0):
                         self.quit(2)
@@ -179,28 +183,40 @@ class ActualValues(Resource):
         return dataDict
 
     def quit(self, num):
-        for x in get_pid("python"):
-            process = psutil.Process(int(x))
-            logger.debug("FOUND PYTHON PROCESS WITH ID: %d", x)
-            if (int(x) != int(os.getpid()) and ('test' in process.cmdline()[1])):
-                logger.debug("Sent SIGKILL to process ID: %d", int(x))
-                os.kill(int(x), signal.SIGKILL)
-                time.sleep(0.5)
+        try:
+            for x in get_pid("python"):
+                process = psutil.Process(int(x))
+                logger.debug("FOUND PYTHON PROCESS WITH ID: %d", x)
+                if (int(x) != int(os.getpid()) and ('test' in process.cmdline()[1])):
+                    logger.debug("Sent SIGKILL to process ID: %d", int(x))
+                    os.kill(int(x), signal.SIGKILL)
+                    time.sleep(1.)
+        except:
+            print("EXCEPTION")
+            logger.debug("exception in SIGKILL")
+            logger.debug(str(sys.exc_info()[0]))
 
         if (num == 1):
             bb.setCurrentA(0)
             au.setCurrent(15)
             time.sleep(15)
-            bb.setCurrent(0)
+            au.setCurrent(0)
 
         elif (num == 2):
             au.setCurrent(0)
             bb.setCurrentA(15)
-            time.sleep(5)
+            time.sleep(15)
             bb.setCurrentA(0)
+        else:
+            au.setCurrent(0)
+            bb.setCurrentA(0)
+            time.sleep(15.)
 
-        for num in range(numslaves + 1):
-            requests.get('http://0.0.0.0:5000/BleedingControll/Sl' + str(num) + 'BlOff')
+        #set bleeding off
+        with open('blconfr.json', 'r') as f:
+            resetdict = json.load(f)
+        with open('blconf.json', 'w') as f:
+            json.dump(resetdict, f)
         #os.kill(int(os.getpid()), signal.SIGTERM)
 
 class BleedingControll(Resource):
@@ -234,13 +250,15 @@ class BleedingControll(Resource):
         else:
             return bldict[slave_id]
         with open('blconf.json', 'w') as f:
+            print("writing bldict")
+            print(bldict)
             json.dump(bldict, f)
         #os.kill(plogging.pid, signal.SIGUSR1)
         return 201
 
 class write2db(Resource):
     try:
-        db = MySQLdb.connect(host="localhost", user="python", passwd="pypasswd", db="test")
+        db = MySQLdb.connect(host="localhost", user="python", passwd="test123", db="test")
         cur = db.cursor()
         cur.execute('SELECT VERSION()')
         db.commit()
@@ -300,6 +318,7 @@ def set_allow_origin(resp):
 
 
 if __name__ == "__main__":
+    plogging = subprocess.Popen(['/usr/bin/python2', 'logging2db.py'])
     app.run(debug=False, host="0.0.0.0", port=5000, threaded=True)
     print("DONE")
 

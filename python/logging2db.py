@@ -14,6 +14,7 @@ import re
 import MySQLdb
 import numpy as np
 import subprocess
+import urllib
 
 #ds18b20.read_temp_raw() #start temperature conversion in sensors
 tempinterval = 2
@@ -45,11 +46,12 @@ numslaves = 3 #link to database settings
 loginterval = 1 #link to database settings
 logging = 1 #link to database settings
 
-slave_addresses = [0x08, 0x02, 0x03]
+slave_addresses = [0x11,0x12,0x14,0x15,0x16,0x19,0x21]
 
 dbTable = "Timestamp REAL, Current REAL, Sl0Voltage REAL"
 for x in slave_addresses:
     dbTable = dbTable + ", " + "Sl" + str(x) + "Voltage REAL"
+
 dbTable = dbTable + ", " + "Sl0Bl REAL"
 for x in slave_addresses:
     dbTable = dbTable + ", " + "Sl" + str(x) + "Bl REAL"
@@ -80,7 +82,7 @@ try:
     print("DONE")
     count = 0
     tempcount = 0
-    db = MySQLdb.connect(host="localhost", user="python", passwd="pypasswd", db="test")
+    db = MySQLdb.connect(host="localhost", user="python", passwd="test123", db="test")
     #db = lite.connect('../database/test.db', timeout = 15.0)
     with db as cur:
         #cur.execute("TRUNCATE TABLE Metingen");
@@ -93,7 +95,8 @@ try:
         start = time.time()
         #print("Getting voltage")
         voltageAll = canau.getAll(slave_addresses)
-        #print("Got voltage")
+        print("voltage all")
+        print(voltageAll)
         voltagestr = str(time.time())
         #Only once in 2 measurements (2 seconds interval) because temp reading takes 1.1 seconds
         #if (count % tempinterval == 0):
@@ -123,7 +126,7 @@ try:
         #write2db = subprocess.Popen(['/usr/bin/python2', 'write2dbMR.py'])
         datalist[count] = datapoint
         count = count + 1
-        print(count)
+        #print(count)
         #print("Bleeding conf")
         with open('blconf.json', 'r') as f:
             try:
@@ -134,8 +137,8 @@ try:
         for (key, value) in bl.items():
             #print(key)
             if (value):
-                #print("BLEEDING FOR:")
-                #print(int(re.search(r'\d+', key).group()))
+                print("BLEEDING FOR:")
+                print(int(re.search(r'\d+', key).group()))
                 canau.setBleedingOn(int(re.search(r'\d+', key).group()))
             else:
                 #print("STOP BLEEDING FOR:")
@@ -148,7 +151,7 @@ try:
             count = 0
             write2db = subprocess.Popen(['/usr/bin/python2', 'write2db.py'])
         sltime = loginterval - (time.time() - start)
-        #print("DONE")
+        urllib.urlopen("http://localhost:5000/ActualValues")
         if (sltime > 0 and sltime < 0.9): time.sleep(sltime)
 except (MySQLdb.Error, MySQLdb.Warning) as e:
     logger.debug("An error occurred: " + str(e.args[0]))

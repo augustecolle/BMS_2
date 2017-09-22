@@ -120,24 +120,26 @@ signal.signal(signal.SIGTERM, signal_handler)
 signal.signal(signal.SIGINT, signal_handler)
 
 #imp.reload(bb)
-bb.startSerial('/dev/ttyUSB1', "02")
+bb.startSerial('/dev/ttyUSB0', "02")
 bb.setRemoteControllOn()
+bb.getActualValues()
 bb.setInputOn()
 bb.setCCMode()
 bb.setPowerA(1000)
-bb.setVoltageA(17.)
-bb.setCurrentA(0)
+bb.setVoltageA(24.)
+bb.setCurrentA(0.)
+bb.getVoltageA()
 bb.clearBuffer()
-
 
 tm.sleep(1)
 
-au.startSerial('/dev/ttyUSB0')
+au.startSerial('/dev/ttyUSB1')
 au.remoteControllOn()
 au.readAndTreat()
-au.setCurrent(0)
-au.setVoltage(16.)
-au.setPower(500)
+au.getActualValues()
+au.setCurrent(0.)
+au.setVoltage(32.)
+#au.setPower(500)
 au.getSetVoltage()
 
 #au.setCurrent(0.3)
@@ -152,14 +154,14 @@ try:
     while True:
         try:
             a = getActualValues()
-            topBalancing(a)
-            print("try")
+            #topBalancing(a)
+            #print("try")
         except:
             print("EMPTY MAX VALUE")
         tm.sleep(1)
         #print("setting current to 15A")
         if (setflag):
-            au.setCurrent(.150)
+            au.setCurrent(10.)
             setflag = False
         #tm.sleep(3*60*60)
     
@@ -181,4 +183,5 @@ except Exception as e:
     bb.stopSerial()
     au.stopSerial()   
     sys.exit(1)
+    quit()
 

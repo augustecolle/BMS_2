@@ -354,6 +354,7 @@ app.run(function($rootScope, $http, $timeout){
     for (var key in response.data){
       $rootScope.dict[key] = [];
     }
+    console.log($rootScope.dict);
   $rootScope.stamp2date = function(timestamp){
     var date = new Date(timestamp*1000);
     var hours = date.getHours();

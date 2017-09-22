@@ -38,17 +38,17 @@ LOGGING = {
     },
     'loggers': {
         'app': {
-            'handlers': ['file', 'console', 'mail'],
+            'handlers': ['file', 'console'],
             'level' : 'DEBUG',
             'propagate' : True,
         },
         'logging2db': {
-            'handlers': ['file', 'console', 'mail'],
+            'handlers': ['file', 'console'],
             'level' : 'DEBUG',
             'propagate' : True,
         },
         'test': {
-            'handlers': ['file', 'console', 'mail'],
+            'handlers': ['file', 'console'],
             'level' : 'DEBUG',
             'propagate' : True,
         },

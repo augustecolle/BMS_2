@@ -66,14 +66,14 @@ def getVoltage(n = 0):
     tot = ((int(resp[0], 2) & 0x1F) << 17) | (int(resp[1], 2) << 9) | (int(resp[2], 2) << 1) | (int(resp[3], 2) >> 7)
     return (twos_comp(tot, 22))*4.096/2.0**21
 
-def getVoltageMaster():
+def getVoltageMaster(SS = 17):
     global datadict
-    GPIO.output(25, GPIO.HIGH) #slave select current measurement
+    GPIO.output(SS, GPIO.HIGH) #slave select current measurement
+    GPIO.output(23, GPIO.HIGH) #slave select current measurement
     setBFPCTRL(int(getBFPCTRL(), 2) & 0xEF)
-    #print(hex(int(getBFPCTRL(), 2)))
     time.sleep(0.10)
+    #setBFPCTRL(int(getBFPCTRL(), 2) & 0xEF)
     resp = spi2.xfer2([0x00, 0x00, 0x00, 0x00])
-    #print(resp)
     tot = ((resp[0] & 0x1F) << 17) | (resp[1] << 9) | (resp[2] << 1) | (resp[3] >> 7)
     #print(bin((int(resp[0], 2) & 0x1F) << 17))
     #print(bin(((int(resp[0], 2) & 0x1F) << 17) | (int(resp[1], 2) << 9)))
@@ -86,7 +86,9 @@ def getVoltageMaster():
 
 def setBleedingMasterOff():
     global bldict
-    GPIO.output(25, GPIO.HIGH) #slave select current measurement
+    print("MASTER BLEEDING OFF")
+    GPIO.output(17, GPIO.HIGH) #slave select current measurement
+    GPIO.output(23, GPIO.HIGH) #
     setBFPCTRL(int(getBFPCTRL(), 2) & 0xDF)
     bldict["Sl0Bl"] = 0
     return 0
@@ -94,8 +96,12 @@ def setBleedingMasterOff():
 
 def setBleedingMasterOn():
     global bldcit
-    GPIO.output(25, GPIO.HIGH) #slave select current measurement
+    print("MASTER BLEEDING ON")
+    GPIO.output(17, GPIO.HIGH) #slave select current measurement
+    GPIO.output(23, GPIO.HIGH) #
     setBFPCTRL(int(getBFPCTRL(), 2) | 0x20)
+    print("BFPCTRL")
+    print(int(getBFPCTRL(), 2))
     bldict["Sl0Bl"] = 1
     return 0
 
@@ -395,19 +401,20 @@ def getREC():
     ans = spi.xfer2([0x03, 0x1D, 0x00])
     return bin(ans[2])[2:].zfill(8)
 
-def getCurrent():
+def getCurrent(SS = 17):
     global currentoffset
     global initiated_meting
     global datadict
-    GPIO.output(25, GPIO.LOW)    
     IPN = 200 #nominal current LEM HAIS
     resp = 0
+    GPIO.output(23, GPIO.LOW)
+    GPIO.output(SS, GPIO.LOW)
     time.sleep(0.10)
     resp = spi2.xfer2([0x00, 0x00, 0x00, 0x00])
-    #print(resp)
     tot = ((resp[0] & 0x1F) << 17) | (resp[1] << 9) | (resp[2] << 1) | (resp[3] >> 7)
-    GPIO.output(25, GPIO.HIGH)
-    res = ((twos_comp(tot, 22))*1.250/2.0**21*IPN/0.625 - currentoffset)
+    GPIO.output(SS, GPIO.HIGH)
+    GPIO.output(23, GPIO.HIGH)
+    res = ((twos_comp(tot, 22))*2.50/2.0**21*IPN/0.625 - currentoffset)
     if (initiated_meting):
         datadict['master current'].append(res)
     return res
@@ -521,12 +528,12 @@ def setBleedingOff(slave, sleeptime=0.15):
     return 0
 
 
-def getAll(slaveaddresses = [], sleeptime = 0.15):
+def getAll(slaveaddresses = [], sleeptime = 0.15, SS = 17):
     global datadict
     global bldict
     datadict = {key:[] for key in datadict}
-    voltm = getVoltageMaster()
-    currentm = getCurrent()
+    voltm = getVoltageMaster(SS=SS)
+    currentm = getCurrent(SS=SS)
     setTXBnDM([3 for x in range(8)], 0)
     for slave in slaveaddresses:
         setCANINTF(0x00)
@@ -536,7 +543,9 @@ def getAll(slaveaddresses = [], sleeptime = 0.15):
         time.sleep(0.05)
         GPIO.output(20, GPIO.LOW)
     time.sleep(sleeptime)
-    return [currentm, voltm] + [datadict[x][-1] if datadict[x] else -1 for x in slaveaddresses] + [(int(getBFPCTRL(), 2) & 0x20) >> 5] + [bldict["Sl"+str(x)+"Bl"] if bldict["Sl"+str(x)+"Bl"] is not None else -1 for x in slaveaddresses]
+    print(getBFPCTRL())
+    out = [currentm, voltm] + [datadict[x][-1] if datadict[x] else -1 for x in slaveaddresses] + [(int(getBFPCTRL(), 2) & 0x20) >> 5] + [bldict["Sl"+str(x)+"Bl"] if bldict["Sl"+str(x)+"Bl"] is not None else -1 for x in slaveaddresses]
+    return out
 
 def init_meting(slaves = []):
     global datadict
@@ -547,6 +556,8 @@ def init_meting(slaves = []):
     datadict['master voltage'] = []
     datadict['master current'] = []
     datadict['timestamp'] = []
+    datadict['Sl0Bl'] = 0
+    setBleedingOff(0)
     for slave in slaves:
         datadict[slave] = []
         bldict["Sl"+str(slave)+"Bl"] = 0
@@ -560,7 +571,7 @@ def exit_meting():
     global initiated_meting
     initiated_meting = 0
 
-def master_init(CNF1=0x0F, CNF2=0x90, CNF3=0x02):
+def master_init(CNF1=0x0F, CNF2=0x90, CNF3=0x02, SS=17):
     '''initiate master, first function to be called. Sets up the GPIO pins, interrupt routines and BFPCTRL which controlls the state of the bleeding resistor and de slave select of the analog ADC'''
     CNF1=0x0F
     CNF2=0x90
@@ -572,16 +583,18 @@ def master_init(CNF1=0x0F, CNF2=0x90, CNF3=0x02):
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(26, GPIO.OUT) #LED RX-CAN
         GPIO.setup(4, GPIO.IN) #Interrupt pin
-        GPIO.setup(25, GPIO.OUT) #slave select
-        GPIO.setup(23, GPIO.OUT) #Error
+        GPIO.setup(SS, GPIO.OUT) #slave select
+        GPIO.setup(23, GPIO.OUT) #GPIO 23 is used for ISO7241 enable pin
+        #GPIO.output(23, GPIO.HIGH)
         GPIO.setup(20, GPIO.OUT) #TX-CAN
         GPIO.setup(21, GPIO.OUT) #not working...
-        GPIO.output(25, GPIO.HIGH) #slave select current measurement
+        GPIO.output(SS, GPIO.HIGH) #slave select current measurement
         GPIO.add_event_detect(4, GPIO.FALLING)
         GPIO.add_event_callback(4, callback = callback_can)
         already_initiated = 1
         softReset()
         setCANCTRL(0x80) #set configuration mode
+        getCANCTRL()
         setCANINTE(0x03) #enable interrupts on receive full
         extendedID()        #enable extended identifier
         setCANINTF(0x00) #clear all interrupt flags
@@ -595,7 +608,7 @@ def master_init(CNF1=0x0F, CNF2=0x90, CNF3=0x02):
         setTXBnDLC(0x01, 0)  #Transmitted message will be a dataframe with 1 byte
         setCANCTRL(0x00)
         setCANINTF(0x00)
-        setBFPCTRL(0x0C)
+        setBFPCTRL(0x1C)
     return 0
 
 def master_exit():

@@ -4,7 +4,7 @@ import sys
 with open("writeDB.txt") as f:
     content = f.readlines()
 
-db = MySQLdb.connect(host="localhost", user="python", passwd="pypasswd", db="test")
+db = MySQLdb.connect(host="localhost", user="python", passwd="test123", db="test")
 
 with db as cur:
     for row in content:
