@@ -149,7 +149,7 @@ try:
             np.savetxt("writeDB.txt", datalist, fmt='%.6f', delimiter=',', newline='\n')
             datalist = [None]*numlines
             count = 0
-            write2db = subprocess.Popen(['/usr/bin/python2', 'write2db.py'])
+            write2db = subprocess.call(['/usr/bin/python2', 'write2db.py'])
         sltime = loginterval - (time.time() - start)
         urllib.urlopen("http://localhost:5000/ActualValues")
         if (sltime > 0 and sltime < 0.9): time.sleep(sltime)

@@ -154,7 +154,7 @@ try:
     while True:
         try:
             a = getActualValues()
-            #topBalancing(a)
+            topBalancing(a)
             #print("try")
         except:
             print("EMPTY MAX VALUE")
@@ -164,7 +164,7 @@ try:
             au.setCurrent(10.)
             setflag = False
         #tm.sleep(3*60*60)
-    
+
 except Exception as e:
     for x in [0,1,2,3]:
         turnBleedingOff(x)
@@ -181,7 +181,7 @@ except Exception as e:
     au.setVoltage(0)
     au.setCurrent(0)
     bb.stopSerial()
-    au.stopSerial()   
+    au.stopSerial()
     sys.exit(1)
     quit()
 
